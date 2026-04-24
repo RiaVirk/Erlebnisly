@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const r=require\\('react'\\); console.log\\(Object.keys\\(r\\).filter\\(k=>k.includes\\('Action'\\)||k.includes\\('Form'\\)||k.includes\\('Optimistic'\\)\\)\\)\")"
+    ]
+  }
+}
