@@ -1,0 +1,288 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String   @id @default(cuid())
+  clerkId         String   @unique
+  email           String?  @unique
+  name            String?
+  imageUrl        String?
+  role            Role     @default(CUSTOMER)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  anonymizedAt    DateTime?
+
+  hostProfile     HostProfile?
+  mollieConnect   MollieConnect?
+  bookings        Booking[]      @relation("CustomerBookings")
+  experiences     Experience[]   @relation("HostExperiences")
+  reviews         Review[]
+  wishlistItems   WishlistItem[]
+  waitlistEntries WaitlistEntry[]
+  notifications   Notification[]
+  actorEvents     BookingEvent[] @relation("ActorEvents")
+
+  @@index([deletedAt])
+}
+
+model HostProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bio         String?
+  location    String?
+  phone       String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model MollieConnect {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  accessTokenEnc   String
+  refreshTokenEnc  String
+  expiresAt        DateTime
+  mollieProfileId  String?  
+  organizationId   String?  
+  chargesEnabled   Boolean  @default(false)
+  payoutsEnabled   Boolean  @default(false)
+  isOnboarded      Boolean  @default(false)
+  platformFeeBps   Int      @default(1500)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model Category {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  slug        String       @unique
+  icon        String?
+  experiences Experience[]
+}
+
+model Experience {
+  id               String   @id @default(cuid())
+  hostId           String
+  categoryId       String
+  title            String
+  shortDescription String   @db.VarChar(160)
+  description      String   @db.Text
+  images           String[] 
+  location         String
+  latitude         Float?
+  longitude        Float?
+  timezone         String   @default("Europe/Berlin")
+  durationMinutes  Int
+  minParticipants  Int      @default(1)
+  maxParticipants  Int
+  difficulty       Difficulty @default(MEDIUM)
+  currency         String   @default("EUR")
+  basePriceCents   Int
+  pricingRules     Json?
+  minPriceCents    Int?
+  maxPriceCents    Int?
+  vatRateBps       Int      @default(1900) 
+  isPublished      Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  deletedAt        DateTime?
+
+  host             User         @relation("HostExperiences", fields: [hostId], references: [id], onDelete: Restrict)
+  category         Category     @relation(fields: [categoryId], references: [id])
+  timeSlots        TimeSlot[]
+  addOns           AddOn[]
+  reviews          Review[]
+  wishlistItems    WishlistItem[]
+
+  @@index([categoryId, isPublished, deletedAt])
+  @@index([minPriceCents])
+  @@index([hostId])
+}
+
+model TimeSlot {
+  id           String   @id @default(cuid())
+  experienceId String
+  startTime    DateTime
+  endTime      DateTime
+  capacity     Int?
+  isBlocked    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  experience   Experience      @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  bookings     Booking[]
+  waitlist     WaitlistEntry[]
+
+  @@unique([experienceId, startTime])
+  @@index([experienceId, startTime])
+}
+
+model AddOn {
+  id           String   @id @default(cuid())
+  experienceId String
+  name         String
+  description  String?
+  priceCents   Int
+  isOptional   Boolean  @default(true)
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id                  String        @id @default(cuid())
+  userId              String
+  timeSlotId          String
+  status              BookingStatus @default(RESERVED_HOLD)
+  holdExpiresAt       DateTime? 
+  participantCount    Int          
+  currency            String        @default("EUR")
+  subtotalCents       Int 
+  addOnsCents         Int           @default(0)
+  totalPriceCents     Int 
+  platformFeeCents    Int 
+  hostPayoutCents     Int 
+  vatCents            Int           @default(0) 
+  molliePaymentId     String?       @unique
+  molliePaymentStatus String?
+  amountRefundedCents Int           @default(0)
+  addOnsSelected      Json?         
+  specialRequests     String?       @db.Text
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+  anonymizedAt        DateTime?
+
+  user         User           @relation("CustomerBookings", fields: [userId], references: [id], onDelete: Restrict)
+  timeSlot     TimeSlot       @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
+  participants Participant[]
+  events       BookingEvent[]
+  review       Review?
+
+  @@index([userId, status])
+  @@index([timeSlotId, status])
+  @@index([status, holdExpiresAt]) 
+  @@index([molliePaymentId])
+}
+
+model Participant {
+  id           String    @id @default(cuid())
+  bookingId    String
+  name         String
+  age          Int?
+  notes        String? 
+  anonymizedAt DateTime? 
+  booking      Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model BookingEvent {
+  id             String         @id @default(cuid())
+  bookingId      String
+  actorId        String?        
+  previousStatus BookingStatus?
+  newStatus      BookingStatus
+  reason         String?
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+
+  booking        Booking        @relation(fields: [bookingId], references: [id])
+  actor          User?          @relation("ActorEvents", fields: [actorId], references: [id])
+
+  @@index([bookingId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model Review {
+  id           String     @id @default(cuid())
+  bookingId    String     @unique 
+  userId       String     
+  experienceId String     
+  rating       Int        
+  comment      String?    @db.Text
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  booking      Booking    @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  user         User       @relation(fields: [userId], references: [id])
+  experience   Experience @relation(fields: [experienceId], references: [id])
+
+  @@index([experienceId, rating])
+  @@index([userId])
+}
+
+model WishlistItem {
+  id           String     @id @default(cuid())
+  userId       String
+  experienceId String
+  createdAt    DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, experienceId])
+}
+
+model WaitlistEntry {
+  id                 String    @id @default(cuid())
+  userId             String
+  timeSlotId         String
+  position           Int       
+  requestedSpots     Int       @default(1)
+  promotedAt         DateTime?
+  promotionExpiresAt DateTime?
+  claimedAt          DateTime? 
+  createdAt          DateTime  @default(now())
+
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeSlot           TimeSlot  @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, timeSlotId])
+  @@index([timeSlotId, position])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String    
+  title     String
+  body      String    @db.Text
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+}
+
+enum Role {
+  CUSTOMER
+  HOST
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum BookingStatus {
+  RESERVED_HOLD          
+  EXPIRED_HOLD           
+  CONFIRMED              
+  NEEDS_REVIEW           
+  COMPLETED              
+  CANCELLED_BY_CUSTOMER
+  CANCELLED_BY_HOST
+  CANCELLED_BY_ADMIN
+  REFUND_PENDING
+  REFUNDED               
+  PARTIALLY_REFUNDED     
+}

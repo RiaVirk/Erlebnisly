@@ -1,5 +1,5 @@
 import Image from "next/image";
-
+import { Button } from "@/components/ui/button";
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -33,6 +33,8 @@ export default function Home() {
             </a>{" "}
             center.
           </p>
+          <button className="bg-amber-600">TEST</button>
+          <Button>shadcn Button works</Button>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <a
