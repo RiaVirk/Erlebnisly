@@ -7,7 +7,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="de">
-        <body>
+        <body suppressHydrationWarning>
           {children}
           <Toaster />
         </body>
