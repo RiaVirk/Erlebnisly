@@ -1,50 +1,46 @@
-// src/app/api/webhooks/clerk/route.ts
-import { Webhook } from 'svix';
-import { headers } from 'next/headers';
-import { WebhookEvent } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/prisma';
-import { env } from '@/lib/env';
+import { headers } from "next/headers";
+import { WebhookEvent } from "@clerk/nextjs/server";
+import { Webhook } from "svix";
+import { prisma } from "@/lib/prisma";
+import { env } from "@/lib/env";
 
 export async function POST(req: Request) {
-  const headerPayload = await headers();
-  const svix_id = headerPayload.get("svix-id");
-  const svix_timestamp = headerPayload.get("svix-timestamp");
-  const svix_signature = headerPayload.get("svix-signature");
+  const body = await req.text();
+  const headersList = await headers();
 
-  if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response('Error: Missing svix headers', { status: 400 });
-  }
-
-  const payload = await req.json();
-  const body = JSON.stringify(payload);
   const wh = new Webhook(env.CLERK_WEBHOOK_SIGNING_SECRET);
+  let event: WebhookEvent;
 
-  let evt: WebhookEvent;
   try {
-    evt = wh.verify(body, {
-      "svix-id": svix_id,
-      "svix-timestamp": svix_timestamp,
-      "svix-signature": svix_signature,
+    event = wh.verify(body, {
+      "svix-id": headersList.get("svix-id") ?? "",
+      "svix-timestamp": headersList.get("svix-timestamp") ?? "",
+      "svix-signature": headersList.get("svix-signature") ?? "",
     }) as WebhookEvent;
-  } catch (err) {
-    return new Response('Error verifying webhook', { status: 400 });
+  } catch {
+    return new Response("Invalid signature", { status: 400 });
   }
 
-  if (evt.type === 'user.created') {
+  if (event.type === "user.created") {
+    const { id, email_addresses, first_name, last_name, image_url } = event.data;
     await prisma.user.create({
       data: {
-        clerkId: evt.data.id,
-        email: evt.data.email_addresses[0]?.email_address,
-      }
+        clerkId: id,
+        email: email_addresses[0]?.email_address ?? null,
+        name: [first_name, last_name].filter(Boolean).join(" ") || null,
+        imageUrl: image_url ?? null,
+      },
     });
   }
 
-  if (evt.type === 'user.deleted') {
-    await prisma.user.update({
-      where: { clerkId: evt.data.id },
-      data: { deletedAt: new Date() }
+  if (event.type === "user.deleted") {
+    const { id } = event.data;
+    await prisma.user.updateMany({
+      where: { clerkId: id as string },
+      data: { deletedAt: new Date() },
     });
+    // Soft delete only — do NOT cascade. Bookings must remain for financial records.
   }
 
-  return new Response('Webhook processed', { status: 200 });
+  return new Response("OK", { status: 200 });
 }
