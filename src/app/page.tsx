@@ -1,6 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -8,14 +7,13 @@ export default async function HomePage() {
   const { userId } = await auth();
 
   if (userId) {
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-    if (user) {
-      // Redirect already-onboarded users to their dashboard
-      if (user.role === "HOST") redirect("/host/dashboard");
-      if (user.role === "CUSTOMER") redirect("/dashboard");
-      // New user with default role — send to onboarding
-      redirect("/onboarding");
-    }
+    const { sessionClaims } = await auth();
+    const role = (sessionClaims?.publicMetadata as { role?: string } | undefined)?.role;
+    // sessionClaims.publicMetadata.role is only set after setUserRole() runs in onboarding
+    if (role === "HOST") redirect("/host/dashboard");
+    if (role === "CUSTOMER") redirect("/dashboard");
+    // No role in session token = new user who hasn't completed onboarding yet
+    redirect("/onboarding");
   }
 
   // Public landing page for unauthenticated visitors
