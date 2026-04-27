@@ -27,7 +27,7 @@ export async function createTimeSlot(
 
   const parsed = CreateTimeSlotSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
   const { experienceId, date, startTime, endTime, capacity } = parsed.data;

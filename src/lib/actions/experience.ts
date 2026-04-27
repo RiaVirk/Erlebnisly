@@ -33,7 +33,7 @@ export async function createExperience(
 
   const parsed = CreateExperienceSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Validation failed" };
+    return { error: parsed.error.issues[0]?.message ?? "Validation failed" };
   }
 
   const data = parsed.data;
@@ -79,7 +79,7 @@ export async function updateExperience(
 
   const parsed = UpdateExperienceSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Validation failed" };
+    return { error: parsed.error.issues[0]?.message ?? "Validation failed" };
   }
 
   const { id, basePriceEuros, ...rest } = parsed.data;

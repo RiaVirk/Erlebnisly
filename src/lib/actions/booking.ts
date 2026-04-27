@@ -21,7 +21,7 @@ export async function createReservationHold(
 
   const parsed = CreateHoldSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Invalid input" };
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
   const { experienceId, timeSlotId, participantCount } = parsed.data;

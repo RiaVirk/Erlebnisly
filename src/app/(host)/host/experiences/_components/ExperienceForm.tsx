@@ -25,7 +25,7 @@ export default function ExperienceForm({ categories }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<z.infer<typeof CreateExperienceSchema>>({
+  const form = useForm<z.input<typeof CreateExperienceSchema>, unknown, z.output<typeof CreateExperienceSchema>>({
     resolver: zodResolver(CreateExperienceSchema),
     defaultValues: {
       title: "",
@@ -42,7 +42,7 @@ export default function ExperienceForm({ categories }: Props) {
     },
   });
 
-  function onSubmit(values: z.infer<typeof CreateExperienceSchema>) {
+  function onSubmit(values: z.output<typeof CreateExperienceSchema>) {
     startTransition(async () => {
       const result = await createExperience(values);
       if (result.error) {
