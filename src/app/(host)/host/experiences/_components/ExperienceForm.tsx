@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/select";
 import { createExperience } from "@/lib/actions/experience";
 import { CreateExperienceSchema } from "@/lib/actions/experience-schema";
-import type { Category } from "@prisma/client";
+type CategoryOption = { id: string; name: string; slug: string };
 
-type Props = { categories: Category[] };
+type Props = { categories: CategoryOption[] };
 
 export default function ExperienceForm({ categories }: Props) {
   const router = useRouter();
@@ -110,7 +110,7 @@ export default function ExperienceForm({ categories }: Props) {
                 <SelectContent>
                   {categories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.icon} {c.name}
+                      {c.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

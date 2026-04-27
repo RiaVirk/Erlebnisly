@@ -5,19 +5,18 @@ import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 
 const NAV_MAIN = [
-  { label: "Dashboard",    href: "/dashboard",    icon: "dashboard" },
-  { label: "Activities",   href: "/experiences",  icon: "search" },
-  { label: "Calendar",     href: "/calendar",     icon: "calendar_month" },
-  { label: "My Bookings",  href: "/bookings",     icon: "confirmation_number" },
-  { label: "Inventory",    href: "/inventory",    icon: "inventory_2" },
+  { label: "Dashboard",       href: "/host/dashboard",     icon: "dashboard" },
+  { label: "Experiences",     href: "/host/experiences",   icon: "travel_explore" },
+  { label: "Bookings",        href: "/host/bookings",      icon: "confirmation_number" },
+  { label: "Calendar",        href: "/host/calendar",      icon: "calendar_month" },
 ] as const;
 
 const NAV_BOTTOM = [
-  { label: "Settings", href: "/settings", icon: "settings" },
-  { label: "Support",  href: "/support",  icon: "help" },
+  { label: "Settings", href: "/host/settings", icon: "settings" },
+  { label: "Support",  href: "/support",       icon: "help" },
 ] as const;
 
-export default function CustomerSidebar() {
+export default function HostSidebar() {
   const pathname = usePathname();
 
   function isActive(href: string) {
@@ -29,7 +28,7 @@ export default function CustomerSidebar() {
       {/* Brand */}
       <div className="px-6 mb-8">
         <h1 className="text-xl font-bold text-ds-on-surface">Erlebnisly</h1>
-        <p className="type-body-sm text-ds-on-surface-variant mt-0.5">Customer Portal</p>
+        <p className="type-body-sm text-ds-on-surface-variant mt-0.5">Host Portal</p>
       </div>
 
       {/* Main nav */}
@@ -53,29 +52,28 @@ export default function CustomerSidebar() {
         })}
       </nav>
 
-      {/* Bottom section */}
+      {/* Bottom */}
       <div className="mt-auto px-3 border-t border-ds-outline-variant pt-4 space-y-0.5">
-        {/* Create Booking CTA */}
+        {/* New Experience CTA */}
         <Link
-          href="/experiences"
+          href="/host/experiences/new"
           className="flex items-center justify-center gap-2 w-full mb-4 py-2.5 px-4 bg-ds-secondary text-ds-on-secondary type-body-sm font-semibold rounded-ds shadow-sm hover:opacity-90 transition-opacity"
         >
           <span className="material-symbols-outlined text-title-sm">add</span>
-          Book Experience
+          New Experience
         </Link>
 
         {NAV_BOTTOM.map(({ label, href, icon }) => (
           <Link
             key={href}
             href={href}
-            className="flex items-center px-3 py-2 type-body-sm text-ds-on-surface-variant hover:bg-ds-surface-container-low hover:text-ds-on-surface rounded transition-colors duration-150"
+            className="flex items-center px-3 py-2 type-body-sm text-ds-on-surface-variant hover:bg-ds-surface-container-low hover:text-ds-on-surface rounded transition-colors"
           >
             <span className="material-symbols-outlined mr-3 text-title-sm">{icon}</span>
             {label}
           </Link>
         ))}
 
-        {/* User */}
         <div className="pt-3 pb-1 px-3 flex items-center gap-3 border-t border-ds-outline-variant mt-2">
           <UserButton />
           <span className="type-body-sm text-ds-on-surface-variant truncate">My Account</span>

@@ -1,11 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import HostSidebar from "./_components/HostSidebar";
 
-export default async function HostLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function HostLayout({ children }: { children: React.ReactNode }) {
   const { userId, sessionClaims } = await auth();
   if (!userId) redirect("/sign-in");
 
@@ -13,16 +10,9 @@ export default async function HostLayout({
   if (role !== "HOST" && role !== "ADMIN") redirect("/dashboard");
 
   return (
-    <div className="min-h-screen">
-      <nav className="border-b px-6 py-4 flex items-center justify-between">
-        <span className="font-bold text-lg">Bookly Host</span>
-        <div className="flex gap-4 text-sm">
-          <a href="/host/dashboard">Dashboard</a>
-          <a href="/host/experiences">My Experiences</a>
-          <a href="/host/bookings">Bookings</a>
-        </div>
-      </nav>
-      <main className="max-w-6xl mx-auto px-6 py-8">{children}</main>
+    <div className="min-h-screen bg-ds-background">
+      <HostSidebar />
+      <main className="ml-60 min-h-screen">{children}</main>
     </div>
   );
 }

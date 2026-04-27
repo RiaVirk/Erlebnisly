@@ -7,11 +7,11 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const categories = [
-    { name: "Adventure",      slug: "adventure",     icon: "🏔️" },
-    { name: "Food & Drink",   slug: "food-drink",    icon: "🍷" },
-    { name: "Arts & Culture", slug: "arts-culture",  icon: "🎨" },
-    { name: "Wellness",       slug: "wellness",      icon: "🧘" },
-    { name: "Professional",   slug: "professional",  icon: "💼" },
+    { name: "Adventure",      slug: "adventure" },
+    { name: "Food & Drink",   slug: "food-drink" },
+    { name: "Arts & Culture", slug: "arts-culture" },
+    { name: "Wellness",       slug: "wellness" },
+    { name: "Professional",   slug: "professional" },
   ];
 
   for (const cat of categories) {
