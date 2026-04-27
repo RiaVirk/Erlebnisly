@@ -128,3 +128,128 @@
     @apply font-mono;
   }
 }
+
+/* ─── Pro-Activity B2B Design System Tokens ─────────────────────────
+   Named with ds- prefix to avoid clashing with shadcn's primary/secondary.
+   Generates utilities: bg-ds-secondary, text-ds-on-surface, rounded-ds-lg, etc.
+──────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Surfaces */
+  --color-ds-surface:                   #f7f9fb;
+  --color-ds-surface-dim:               #d8dadc;
+  --color-ds-surface-bright:            #f7f9fb;
+  --color-ds-surface-container-lowest:  #ffffff;
+  --color-ds-surface-container-low:     #f2f4f6;
+  --color-ds-surface-container:         #eceef0;
+  --color-ds-surface-container-high:    #e6e8ea;
+  --color-ds-surface-container-highest: #e0e3e5;
+
+  /* On-surface */
+  --color-ds-on-surface:         #191c1e;
+  --color-ds-on-surface-variant: #45464d;
+  --color-ds-inverse-surface:    #2d3133;
+  --color-ds-inverse-on-surface: #eff1f3;
+
+  /* Outlines */
+  --color-ds-outline:         #76777d;
+  --color-ds-outline-variant: #c6c6cd;
+
+  /* Primary — Midnight Black */
+  --color-ds-primary:              #000000;
+  --color-ds-on-primary:           #ffffff;
+  --color-ds-primary-container:    #131b2e;
+  --color-ds-on-primary-container: #7c839b;
+  --color-ds-primary-fixed:        #dae2fd;
+  --color-ds-primary-fixed-dim:    #bec6e0;
+
+  /* Secondary — Emerald Green */
+  --color-ds-secondary:              #006c49;
+  --color-ds-on-secondary:           #ffffff;
+  --color-ds-secondary-container:    #6cf8bb;
+  --color-ds-on-secondary-container: #00714d;
+  --color-ds-secondary-fixed:        #6ffbbe;
+  --color-ds-secondary-fixed-dim:    #4edea3;
+
+  /* Tertiary */
+  --color-ds-tertiary-container:    #0d1c2f;
+  --color-ds-on-tertiary-container: #76859b;
+
+  /* Error */
+  --color-ds-error:              #ba1a1a;
+  --color-ds-on-error:           #ffffff;
+  --color-ds-error-container:    #ffdad6;
+  --color-ds-on-error-container: #93000a;
+
+  /* Background */
+  --color-ds-background:    #f7f9fb;
+  --color-ds-on-background: #191c1e;
+
+  /* ── Typography scale ─────────────────────────────────────────── */
+  --text-display-lg:   36px;
+  --text-headline-md:  24px;
+  --text-title-sm:     18px;
+  --text-body-md:      16px;
+  --text-body-sm:      14px;
+  --text-label-caps:   12px;
+  --text-data-tabular: 14px;
+
+  /* ── Spacing scale (8px base unit) ───────────────────────────── */
+  --spacing-stack-xs:     4px;
+  --spacing-stack-md:     16px;
+  --spacing-stack-lg:     32px;
+  --spacing-gutter:       24px;
+  --spacing-margin-page:  32px;
+
+  /* ── Border radius ────────────────────────────────────────────── */
+  --radius-ds-sm: 0.125rem;   /* 2px  — inputs, chips    */
+  --radius-ds:    0.25rem;    /* 4px  — buttons, fields  */
+  --radius-ds-md: 0.375rem;   /* 6px  — cards            */
+  --radius-ds-lg: 0.5rem;     /* 8px  — panels           */
+  --radius-ds-xl: 0.75rem;    /* 12px — modals           */
+}
+
+/* ── Typography utility classes ─────────────────────────────────────
+   Bundles font-size + line-height + weight + tracking in one class.
+──────────────────────────────────────────────────────────────────── */
+@layer components {
+  .type-display-lg {
+    font-size: 36px;
+    line-height: 44px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .type-headline-md {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .type-title-sm {
+    font-size: 18px;
+    line-height: 28px;
+    font-weight: 600;
+  }
+  .type-body-md {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+  .type-body-sm {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  .type-label-caps {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .type-data-tabular {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+}
