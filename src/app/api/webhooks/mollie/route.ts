@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     let newStatus: BookingStatus | null = null;
     let reason = `Mollie payment status: ${payment.status}`;
 
-    if (payment.isPaid()) {
+    if (payment.status === "paid") {
       // Payment succeeded — but check if the hold is still valid
       const stillHaveSpot = await verifySpotStillAvailable({
         timeSlotId: booking.timeSlotId,
@@ -83,14 +83,10 @@ export async function POST(req: NextRequest) {
           { bookingId, paymentId }
         );
       }
-    } else if (payment.isCanceled() || payment.isExpired()) {
+    } else if (payment.status === "canceled" || payment.status === "expired") {
       newStatus = "EXPIRED_HOLD";
       reason = `Payment ${payment.status} by customer/Mollie`;
-    } else if (
-      typeof payment.isFailed === "function"
-        ? payment.isFailed()
-        : payment.status === "failed"
-    ) {
+    } else if (payment.status === "failed") {
       newStatus = "EXPIRED_HOLD";
       reason = "Payment failed";
     } else if (refundedCents > 0) {

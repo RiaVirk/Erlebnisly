@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(node -e \"const r=require\\('react'\\); console.log\\(Object.keys\\(r\\).filter\\(k=>k.includes\\('Action'\\)||k.includes\\('Form'\\)||k.includes\\('Optimistic'\\)\\)\\)\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(xargs grep *)",
+      "Bash(npx shadcn@latest add form --yes)",
+      "Bash(node -e \"const r = require\\('radix-ui'\\); console.log\\(typeof r.Slot, Object.keys\\(r.Slot || {}\\)\\)\")"
     ]
   }
 }
