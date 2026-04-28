@@ -2,194 +2,195 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { mollie } from "@/lib/mollie";
-import { env } from "@/lib/env";
-import { z } from "zod";
-import { format } from "date-fns";
+import { getHostMollieClient, HostNotConnectedError, HostNotOnboardedError } from "@/lib/mollie";
 import { calculatePrice } from "@/lib/pricing/calculator";
+import { env } from "@/lib/env";
+import { addMinutes } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
-const CreateHoldSchema = z.object({
-  experienceId: z.string().cuid(),
-  timeSlotId: z.string().cuid(),
-  participantCount: z.number().int().min(1).max(50),
-  selectedAddOnIds: z.array(z.string().cuid()).optional(),
-});
+export async function createReservationHold(input: {
+  timeSlotId: string;
+  participantCount: number;
+  selectedAddOnIds?: string[];
+  specialRequests?: string;
+}) {
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) return { ok: false, error: "Not signed in" } as const;
 
-export async function createReservationHold(
-  rawInput: unknown
-): Promise<{ checkoutUrl?: string; bookingId?: string; error?: string }> {
-  const { userId: clerkId } = await auth();
-  if (!clerkId) return { error: "You must be signed in to book" };
+  const dbUser = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+  if (!dbUser) return { ok: false, error: "No user" } as const;
 
-  const parsed = CreateHoldSchema.safeParse(rawInput);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  }
-
-  const { experienceId, timeSlotId, participantCount, selectedAddOnIds } = parsed.data;
-
-  // Get DB user
-  const user = await prisma.user.findUnique({ where: { clerkId } });
-  if (!user) return { error: "User not found" };
-
-  // ─── Load experience and slot ───────────────────────────────────
-  const experience = await prisma.experience.findUnique({
-    where: { id: experienceId, isPublished: true, deletedAt: null },
-  });
-  if (!experience) return { error: "Experience not found or not available" };
-
-  const slot = await prisma.timeSlot.findUnique({
-    where: { id: timeSlotId },
-  });
-  if (!slot || slot.experienceId !== experienceId) return { error: "Time slot not found" };
-  if (slot.isBlocked) return { error: "This slot is no longer available" };
-  if (slot.startTime <= new Date()) return { error: "This slot has already started" };
-
-  // ─── Calculate price SERVER-SIDE (Golden Rule #5) ───────────────
-  const selectedAddOns =
-    selectedAddOnIds?.length
-      ? await prisma.addOn.findMany({
-          where: { id: { in: selectedAddOnIds }, experienceId: experience.id },
-        })
-      : [];
-
-  const addOnsCents = selectedAddOns.reduce((s, a) => s + a.priceCents, 0);
-
-  const breakdown = calculatePrice({
-    basePriceCents: experience.basePriceCents,
-    participants: participantCount,
-    addOnsCents,
-    slotStartTime: slot.startTime,
-    rawRules: experience.pricingRules,
-  });
-
-  const totalPriceCents = breakdown.totalCents;
-
-  const vatCents = Math.round(
-    totalPriceCents * (experience.vatRateBps / (10000 + experience.vatRateBps))
-  );
-
-  const platformFeeBps = 1500;
-  const platformFeeCents = Math.round(totalPriceCents * (platformFeeBps / 10_000));
-  const hostPayoutCents = totalPriceCents - platformFeeCents;
-
-  // ─── Validate participant count ──────────────────────────────────
-  if (participantCount < experience.minParticipants) {
-    return { error: `Minimum ${experience.minParticipants} participants required` };
-  }
-
-  const capacity = slot.capacity ?? experience.maxParticipants;
-  if (participantCount > capacity) {
-    return { error: `Maximum ${capacity} participants for this slot` };
-  }
-
-  // ─── Transaction: lock the slot, check availability, create booking ──
-  let bookingId: string;
+  // ── Transact: lock slot → check capacity → price → create booking ──
+  let result: {
+    booking: { id: string; totalPriceCents: number; platformFeeCents: number; currency: string };
+    hostUserId: string;
+    experienceTitle: string;
+    slotStart: Date;
+    timezone: string;
+  };
 
   try {
-    bookingId = await prisma.$transaction(
+    result = await prisma.$transaction(
       async (tx) => {
-        // Lock the slot row to prevent concurrent overbooking
-        // This ensures only one transaction runs this block at a time for this slot
-        await tx.$queryRaw`
-          SELECT id FROM "TimeSlot"
-          WHERE id = ${timeSlotId}
-          FOR UPDATE
-        `;
+        await tx.$queryRaw`SELECT id FROM "TimeSlot" WHERE id = ${input.timeSlotId} FOR UPDATE`;
 
-        // Count spots already taken (active holds + confirmed)
+        const slot = await tx.timeSlot.findUnique({
+          where: { id: input.timeSlotId },
+          include: { experience: { include: { addOns: true } } },
+        });
+        if (!slot) throw new Error("Slot not found");
+        if (slot.isBlocked) throw new Error("This slot is no longer available");
+        if (slot.startTime <= new Date()) throw new Error("This slot has already started");
+
+        const cap = slot.capacity ?? slot.experience.maxParticipants;
         const taken = await tx.booking.aggregate({
           where: {
-            timeSlotId,
+            timeSlotId: slot.id,
             status: { in: ["CONFIRMED", "RESERVED_HOLD"] },
-            OR: [
-              { holdExpiresAt: null },
-              { holdExpiresAt: { gt: new Date() } },
-            ],
+            OR: [{ holdExpiresAt: null }, { holdExpiresAt: { gt: new Date() } }],
           },
           _sum: { participantCount: true },
         });
-
-        const spotsTaken = taken._sum.participantCount ?? 0;
-
-        if (spotsTaken + participantCount > capacity) {
+        if ((taken._sum.participantCount ?? 0) + input.participantCount > cap) {
           throw new Error(
-            `Only ${capacity - spotsTaken} spots left. Please reduce your group size.`
+            `Only ${cap - (taken._sum.participantCount ?? 0)} spot(s) left. Reduce your group size.`
           );
         }
 
-        // Create the booking
+        if (input.participantCount < slot.experience.minParticipants) {
+          throw new Error(`Minimum ${slot.experience.minParticipants} participants required`);
+        }
+
+        // Server-side price calculation — never trust client
+        const selectedAddOns = input.selectedAddOnIds?.length
+          ? slot.experience.addOns.filter((a) => input.selectedAddOnIds!.includes(a.id))
+          : [];
+        const addOnsCents = selectedAddOns.reduce((s, a) => s + a.priceCents, 0);
+
+        const breakdown = calculatePrice({
+          basePriceCents: slot.experience.basePriceCents,
+          participants: input.participantCount,
+          addOnsCents,
+          slotStartTime: slot.startTime,
+          rawRules: slot.experience.pricingRules,
+        });
+
+        const conn = await tx.mollieConnect.findUnique({
+          where: { userId: slot.experience.hostId },
+        });
+        if (!conn) throw new Error("Host has not connected Mollie — cannot accept payments");
+
+        const platformFeeCents = Math.round(breakdown.totalCents * conn.platformFeeBps / 10_000);
+        const hostPayoutCents = breakdown.totalCents - platformFeeCents;
+        const vatCents = Math.round(
+          breakdown.totalCents * slot.experience.vatRateBps / (10_000 + slot.experience.vatRateBps)
+        );
+
         const booking = await tx.booking.create({
           data: {
-            userId: user.id,
-            timeSlotId,
+            userId: dbUser.id,
+            timeSlotId: slot.id,
             status: "RESERVED_HOLD",
-            holdExpiresAt: new Date(Date.now() + 15 * 60_000),
-            participantCount,
-            currency: "EUR",
+            holdExpiresAt: addMinutes(new Date(), 15),
+            participantCount: input.participantCount,
+            currency: slot.experience.currency,
             subtotalCents: breakdown.subtotalCents,
             addOnsCents: breakdown.addOnsCents,
-            totalPriceCents,
+            totalPriceCents: breakdown.totalCents,
             platformFeeCents,
             hostPayoutCents,
             vatCents,
             addOnsSelected: selectedAddOns.length
               ? Object.fromEntries(selectedAddOns.map((a) => [a.id, 1]))
               : undefined,
+            specialRequests: input.specialRequests,
           },
         });
 
-        // Create the audit event (Golden Rule #3)
         await tx.bookingEvent.create({
           data: {
             bookingId: booking.id,
-            actorId: user.id,
-            previousStatus: null,
+            actorId: dbUser.id,
             newStatus: "RESERVED_HOLD",
-            reason: "Customer initiated booking",
+            reason: "Customer started checkout",
           },
         });
 
-        return booking.id;
+        return {
+          booking: {
+            id: booking.id,
+            totalPriceCents: booking.totalPriceCents,
+            platformFeeCents: booking.platformFeeCents,
+            currency: booking.currency,
+          },
+          hostUserId: slot.experience.hostId,
+          experienceTitle: slot.experience.title,
+          slotStart: slot.startTime,
+          timezone: slot.experience.timezone,
+        };
       },
-      { timeout: 10000 } // 10 second timeout
+      { isolationLevel: "Serializable", timeout: 10_000 }
     );
   } catch (err: unknown) {
-    // Re-throw user-friendly messages
-    if (err instanceof Error) return { error: err.message };
-    return { error: "Failed to reserve slot. Please try again." };
+    if (err instanceof Error) return { ok: false, error: err.message } as const;
+    return { ok: false, error: "Failed to reserve slot. Please try again." } as const;
   }
 
-  // ─── Create Mollie payment (OUTSIDE the transaction) ────────────
-  // If Mollie fails, the hold exists but has no payment ID.
-  // The 15-minute expiry cron will clean it up.
+  // ── Outside the transaction: create the Mollie payment ──────────
+  let hostClient;
   try {
-    const slotDate = format(slot.startTime, "d MMM yyyy");
-    const payment = await mollie.payments.create({
-      amount: {
-        currency: "EUR",
-        value: (totalPriceCents / 100).toFixed(2), // must be string: "49.99"
-      },
-      description: `${experience.title} on ${slotDate}`,
-      redirectUrl: `${env.APP_URL}/bookings/${bookingId}/thank-you`,
-      webhookUrl: `${env.APP_URL}/api/webhooks/mollie`,
-      metadata: { bookingId },
-    });
-
-    // Save molliePaymentId to booking
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: { molliePaymentId: payment.id },
-    });
-
-    return { checkoutUrl: payment.getCheckoutUrl() ?? undefined, bookingId };
+    hostClient = await getHostMollieClient(result.hostUserId);
   } catch (err) {
-    console.error("[createReservationHold] Mollie error:", err);
-    // Booking hold was created but payment failed — it'll expire in 15 min.
-    // Return the bookingId so customer can see status.
-    return {
-      error: "Payment initialization failed. Your reservation will expire in 15 minutes.",
-      bookingId,
-    };
+    if (err instanceof HostNotOnboardedError || err instanceof HostNotConnectedError) {
+      await prisma.booking.update({
+        where: { id: result.booking.id },
+        data: { status: "EXPIRED_HOLD" },
+      });
+      return {
+        ok: false,
+        error: "This experience is temporarily unavailable for payments. Please try another.",
+      } as const;
+    }
+    throw err;
   }
+
+  const totalEur = (result.booking.totalPriceCents / 100).toFixed(2);
+  const feeEur = (result.booking.platformFeeCents / 100).toFixed(2);
+  const slotLabel = formatInTimeZone(result.slotStart, result.timezone, "PPpp");
+
+  let payment;
+  try {
+    payment = await hostClient.client.payments.create({
+      amount: { currency: result.booking.currency, value: totalEur },
+      description: `${result.experienceTitle} on ${slotLabel}`,
+      redirectUrl: `${env.APP_URL}/bookings/${result.booking.id}/thank-you`,
+      webhookUrl: `${env.APP_URL}/api/mollie/webhook`,
+      metadata: { bookingId: result.booking.id },
+      profileId: hostClient.profileId,
+      applicationFee: {
+        amount: { currency: result.booking.currency, value: feeEur },
+        description: "Erlebnisly platform fee",
+      },
+      testmode: env.NODE_ENV !== "production",
+    });
+  } catch (err) {
+    console.error("[createReservationHold] Mollie payment creation failed", err);
+    // Hold is live; it'll expire in 15 min if no payment attaches
+    return {
+      ok: false,
+      error: "Payment initialization failed. Your reservation will expire in 15 minutes.",
+    } as const;
+  }
+
+  await prisma.booking.update({
+    where: { id: result.booking.id },
+    data: { molliePaymentId: payment.id, molliePaymentStatus: payment.status },
+  });
+
+  const checkoutUrl = payment.getCheckoutUrl();
+  if (!checkoutUrl) {
+    throw new Error("Mollie did not return a checkout URL");
+  }
+
+  return { ok: true, checkoutUrl, bookingId: result.booking.id } as const;
 }

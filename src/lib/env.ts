@@ -14,7 +14,7 @@ const schema = z.object({
   ENCRYPTION_KEY: z.string().min(44),
   RESEND_API_KEY: z.string().min(1),
   EMAIL_FROM: z.string().email(),
-  CRON_SECRET: z.string().min(1),
+  CRON_SECRET: z.string().min(32),
 });
 
 export const env = schema.parse(process.env);

@@ -1,6 +1,8 @@
 {
   "crons": [
     { "path": "/api/cron/expire-holds", "schedule": "* * * * *" },
-    { "path": "/api/cron/promote-waitlist", "schedule": "* * * * *" }
+    { "path": "/api/cron/promote-waitlist", "schedule": "* * * * *" },
+    { "path": "/api/cron/complete-bookings", "schedule": "0 * * * *" },
+    { "path": "/api/cron/refresh-mollie-status", "schedule": "0 */6 * * *" }
   ]
 }

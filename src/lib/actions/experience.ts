@@ -152,36 +152,46 @@ export async function deleteExperience(
 
 // ─── Publish ─────────────────────────────────────────────────────
 
-export async function publishExperience(
-  id: string
-): Promise<{ error?: string }> {
+export async function publishExperience(id: string): Promise<{
+  ok: boolean;
+  error?: string;
+  action?: { label: string; href: string };
+}> {
   const user = await getAuthenticatedUser().catch(() => null);
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { ok: false, error: "Not authenticated" };
 
-  const experience = await prisma.experience.findUnique({ where: { id } });
-  if (!experience) return { error: "Not found" };
+  const [experience, mollieConnect] = await Promise.all([
+    prisma.experience.findUnique({
+      where: { id },
+      select: { id: true, hostId: true, deletedAt: true },
+    }),
+    prisma.mollieConnect.findUnique({ where: { userId: user.id } }),
+  ]);
+
+  if (!experience || experience.deletedAt) return { ok: false, error: "Not found" };
   if (experience.hostId !== user.id && user.role !== "ADMIN")
-    return { error: "Not your experience" };
+    return { ok: false, error: "Forbidden" };
 
-  // Golden Rule #6 — check Mollie Connect chargesEnabled
-  const mollieConnect = await prisma.mollieConnect.findUnique({
-    where: { userId: user.id },
-  });
-
-  // For Phase 1: allow publish if mollieConnect row doesn't exist yet
-  // (testing without real Mollie OAuth). In Phase 3, remove this bypass.
-  const canCharge = mollieConnect?.chargesEnabled ?? false;
-  const isPhase1TestMode = process.env.NODE_ENV === "development";
-
-  if (!canCharge && !isPhase1TestMode) {
+  if (!mollieConnect) {
     return {
-      error:
-        "You must complete Mollie payment onboarding before publishing. Go to Settings → Payments.",
+      ok: false,
+      error: "Connect your Mollie account before publishing.",
+      action: { label: "Connect Mollie", href: "/host/connect-mollie" },
     };
   }
-
-  if (!experience.images || experience.images.length === 0) {
-    return { error: "Add at least one image before publishing" };
+  if (!mollieConnect.chargesEnabled) {
+    return {
+      ok: false,
+      error: "Your Mollie account isn't approved for payments yet.",
+      action: { label: "Check status", href: "/host/connect-mollie" },
+    };
+  }
+  if (!mollieConnect.mollieProfileId) {
+    return {
+      ok: false,
+      error: "Your Mollie account has no payment profile yet.",
+      action: { label: "Open Mollie dashboard", href: "https://my.mollie.com" },
+    };
   }
 
   await prisma.experience.update({
@@ -189,7 +199,8 @@ export async function publishExperience(
     data: { isPublished: true },
   });
 
-  revalidatePath("/host/experiences");
   revalidatePath(`/experiences/${id}`);
-  return {};
+  revalidatePath("/experiences");
+  revalidatePath("/host/experiences");
+  return { ok: true };
 }

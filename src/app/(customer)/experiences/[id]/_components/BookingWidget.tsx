@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import TimeSlotPicker from "@/components/TimeSlotPicker";
 import { PriceLiveCalculator } from "@/components/pricing/PriceLiveCalculator";
@@ -33,7 +32,6 @@ type Props = {
 };
 
 export default function BookingWidget({ experience, slots, addOns }: Props) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>();
 
@@ -43,7 +41,6 @@ export default function BookingWidget({ experience, slots, addOns }: Props) {
   function handleBook({
     participants,
     selectedAddOnIds,
-    expectedTotalCents: _expectedTotalCents,
   }: {
     participants: number;
     selectedAddOnIds: string[];
@@ -53,15 +50,12 @@ export default function BookingWidget({ experience, slots, addOns }: Props) {
     if (!selectedSlotId) { toast.error("Please select a time slot"); return; }
     startTransition(async () => {
       const result = await createReservationHold({
-        experienceId: experience.id,
         timeSlotId: selectedSlotId,
         participantCount: participants,
         selectedAddOnIds,
-        // expectedTotalCents is a display hint only — server always recalculates
       });
-      if (result.error) { toast.error(result.error); return; }
-      if (result.checkoutUrl) window.location.href = result.checkoutUrl;
-      else router.push(`/bookings/${result.bookingId}/thank-you`);
+      if (!result.ok) { toast.error(result.error); return; }
+      window.location.href = result.checkoutUrl;
     });
   }
 
