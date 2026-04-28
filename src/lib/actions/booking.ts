@@ -6,11 +6,13 @@ import { mollie } from "@/lib/mollie";
 import { env } from "@/lib/env";
 import { z } from "zod";
 import { format } from "date-fns";
+import { calculatePrice } from "@/lib/pricing/calculator";
 
 const CreateHoldSchema = z.object({
   experienceId: z.string().cuid(),
   timeSlotId: z.string().cuid(),
   participantCount: z.number().int().min(1).max(50),
+  selectedAddOnIds: z.array(z.string().cuid()).optional(),
 });
 
 export async function createReservationHold(
@@ -24,7 +26,7 @@ export async function createReservationHold(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const { experienceId, timeSlotId, participantCount } = parsed.data;
+  const { experienceId, timeSlotId, participantCount, selectedAddOnIds } = parsed.data;
 
   // Get DB user
   const user = await prisma.user.findUnique({ where: { clerkId } });
@@ -44,20 +46,31 @@ export async function createReservationHold(
   if (slot.startTime <= new Date()) return { error: "This slot has already started" };
 
   // ─── Calculate price SERVER-SIDE (Golden Rule #5) ───────────────
-  // Phase 1: simple base price × participants
-  // Phase 2: apply pricingRules
-  const subtotalCents = experience.basePriceCents * participantCount;
-  const addOnsCents = 0;
-  const totalPriceCents = subtotalCents + addOnsCents;
+  const selectedAddOns =
+    selectedAddOnIds?.length
+      ? await prisma.addOn.findMany({
+          where: { id: { in: selectedAddOnIds }, experienceId: experience.id },
+        })
+      : [];
 
-  // VAT is informational (already included in price, not added on top)
+  const addOnsCents = selectedAddOns.reduce((s, a) => s + a.priceCents, 0);
+
+  const breakdown = calculatePrice({
+    basePriceCents: experience.basePriceCents,
+    participants: participantCount,
+    addOnsCents,
+    slotStartTime: slot.startTime,
+    rawRules: experience.pricingRules,
+  });
+
+  const totalPriceCents = breakdown.totalCents;
+
   const vatCents = Math.round(
     totalPriceCents * (experience.vatRateBps / (10000 + experience.vatRateBps))
   );
 
-  // Platform fee (15% by default — read from mollieConnect if available)
   const platformFeeBps = 1500;
-  const platformFeeCents = Math.round(totalPriceCents * (platformFeeBps / 10000));
+  const platformFeeCents = Math.round(totalPriceCents * (platformFeeBps / 10_000));
   const hostPayoutCents = totalPriceCents - platformFeeCents;
 
   // ─── Validate participant count ──────────────────────────────────
@@ -111,15 +124,18 @@ export async function createReservationHold(
             userId: user.id,
             timeSlotId,
             status: "RESERVED_HOLD",
-            holdExpiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+            holdExpiresAt: new Date(Date.now() + 15 * 60_000),
             participantCount,
             currency: "EUR",
-            subtotalCents,
-            addOnsCents,
+            subtotalCents: breakdown.subtotalCents,
+            addOnsCents: breakdown.addOnsCents,
             totalPriceCents,
             platformFeeCents,
             hostPayoutCents,
             vatCents,
+            addOnsSelected: selectedAddOns.length
+              ? Object.fromEntries(selectedAddOns.map((a) => [a.id, 1]))
+              : undefined,
           },
         });
 

@@ -4,8 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import TimeSlotPicker from "@/components/TimeSlotPicker";
-import { formatCentsEUR } from "@/lib/pricing/utils";
+import { PriceLiveCalculator } from "@/components/pricing/PriceLiveCalculator";
+import { WaitlistButton } from "@/components/waitlist/WaitlistButton";
 import { createReservationHold } from "@/lib/actions/booking";
+import type { AddOn, Prisma } from "@prisma/client";
 
 type Slot = {
   id: string;
@@ -24,29 +26,42 @@ type Props = {
     maxParticipants: number;
     minParticipants: number;
     timezone: string;
+    pricingRules: Prisma.JsonValue | null;
   };
   slots: Slot[];
+  addOns: AddOn[];
 };
 
-export default function BookingWidget({ experience, slots }: Props) {
+export default function BookingWidget({ experience, slots, addOns }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>();
-  const [participants, setParticipants] = useState(experience.minParticipants);
 
   const selectedSlot = slots.find((s) => s.id === selectedSlotId);
-  const totalCents = experience.basePriceCents * participants;
+  const isFull = selectedSlot !== undefined && selectedSlot.available <= 0;
 
-  function handleBook() {
+  function handleBook({
+    participants,
+    selectedAddOnIds,
+    expectedTotalCents: _expectedTotalCents,
+  }: {
+    participants: number;
+    selectedAddOnIds: string[];
+    totalAddOnCents: number;
+    expectedTotalCents: number;
+  }) {
     if (!selectedSlotId) { toast.error("Please select a time slot"); return; }
     startTransition(async () => {
       const result = await createReservationHold({
         experienceId: experience.id,
         timeSlotId: selectedSlotId,
         participantCount: participants,
+        selectedAddOnIds,
+        // expectedTotalCents is a display hint only — server always recalculates
       });
       if (result.error) { toast.error(result.error); return; }
       if (result.checkoutUrl) window.location.href = result.checkoutUrl;
+      else router.push(`/bookings/${result.bookingId}/thank-you`);
     });
   }
 
@@ -60,42 +75,18 @@ export default function BookingWidget({ experience, slots }: Props) {
       />
 
       {selectedSlot && (
-        <div>
-          <label className="type-label-caps text-ds-on-surface-variant block mb-2">PARTICIPANTS</label>
-          <input
-            type="number"
-            min={experience.minParticipants}
-            max={Math.min(experience.maxParticipants, selectedSlot.available)}
-            value={participants}
-            onChange={(e) => setParticipants(Number(e.target.value))}
-            className="w-full border border-ds-outline-variant rounded-ds px-3 py-2 type-body-sm text-ds-on-surface bg-white focus:border-ds-secondary focus:outline-none focus:ring-1 focus:ring-ds-secondary transition-colors"
+        isFull ? (
+          <WaitlistButton timeSlotId={selectedSlot.id} isOnWaitlist={false} />
+        ) : (
+          <PriceLiveCalculator
+            experience={experience}
+            slotStartTime={selectedSlot.startTime}
+            addOns={addOns}
+            isLoading={isPending}
+            onBook={handleBook}
           />
-          <p className="type-body-sm text-ds-on-surface-variant mt-1">
-            {selectedSlot.available} spot{selectedSlot.available !== 1 ? "s" : ""} available
-          </p>
-        </div>
+        )
       )}
-
-      {selectedSlotId && (
-        <div className="border border-ds-outline-variant rounded-ds-lg p-4 space-y-2">
-          <div className="flex justify-between type-body-sm text-ds-on-surface-variant">
-            <span>{formatCentsEUR(experience.basePriceCents)} × {participants}</span>
-            <span>{formatCentsEUR(totalCents)}</span>
-          </div>
-          <div className="flex justify-between type-body-sm font-semibold text-ds-on-surface border-t border-ds-outline-variant pt-2">
-            <span>Total</span>
-            <span className="type-data-tabular">{formatCentsEUR(totalCents)}</span>
-          </div>
-        </div>
-      )}
-
-      <button
-        disabled={!selectedSlotId || isPending}
-        onClick={handleBook}
-        className="w-full py-3 bg-ds-secondary text-ds-on-secondary type-body-sm font-semibold rounded-ds hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        {isPending ? "Reserving…" : "Book Now"}
-      </button>
     </div>
   );
 }

@@ -6,7 +6,14 @@ import Link from "next/link";
 export default async function ExperiencesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string; difficulty?: string; page?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    q?: string;
+    difficulty?: string;
+    page?: string;
+    minPrice?: string;
+    maxPrice?: string;
+  }>;
 }) {
   const sp = await searchParams;
 

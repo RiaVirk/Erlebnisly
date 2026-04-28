@@ -17,13 +17,16 @@ export default async function ExperienceDetailPage({
 }) {
   const { id } = await params;
 
-  const experience = await prisma.experience.findUnique({
-    where: { id, isPublished: true, deletedAt: null },
-    include: {
-      category: true,
-      host: { select: { name: true, imageUrl: true } },
-    },
-  });
+  const [experience, addOns] = await Promise.all([
+    prisma.experience.findUnique({
+      where: { id, isPublished: true, deletedAt: null },
+      include: {
+        category: true,
+        host: { select: { name: true, imageUrl: true } },
+      },
+    }),
+    prisma.addOn.findMany({ where: { experienceId: id }, orderBy: { priceCents: "asc" } }),
+  ]);
 
   if (!experience) notFound();
 
@@ -120,8 +123,10 @@ export default async function ExperienceDetailPage({
                   maxParticipants: experience.maxParticipants,
                   minParticipants: experience.minParticipants,
                   timezone: experience.timezone,
+                  pricingRules: experience.pricingRules,
                 }}
                 slots={slots}
+                addOns={addOns}
               />
             </div>
           </div>

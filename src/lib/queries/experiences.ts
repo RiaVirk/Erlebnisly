@@ -6,6 +6,8 @@ export type GetExperiencesOptions = {
   q?: string;
   difficulty?: string;
   page?: string;
+  minPrice?: string;
+  maxPrice?: string;
 };
 
 const PAGE_SIZE = 9;
@@ -22,6 +24,9 @@ export async function getPublishedExperiences(opts: GetExperiencesOptions) {
       ? (opts.difficulty.toUpperCase() as Difficulty)
       : undefined;
 
+  const minCents = opts.minPrice ? Math.round(Number(opts.minPrice) * 100) : undefined;
+  const maxCents = opts.maxPrice ? Math.round(Number(opts.maxPrice) * 100) : undefined;
+
   const where = {
     isPublished: true,
     isActive: true,
@@ -37,6 +42,9 @@ export async function getPublishedExperiences(opts: GetExperiencesOptions) {
           ],
         }
       : {}),
+    // Price range: experience price range overlaps the user's requested range
+    ...(minCents !== undefined ? { maxPriceCents: { gte: minCents } } : {}),
+    ...(maxCents !== undefined ? { minPriceCents: { lte: maxCents } } : {}),
   };
 
   const [experiences, total] = await Promise.all([

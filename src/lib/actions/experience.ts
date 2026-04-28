@@ -1,5 +1,5 @@
 "use server";
-
+import { computeMinMaxPrice } from "@/lib/pricing/denormalize";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { eurosStringToCents } from "@/lib/pricing/utils";
@@ -41,6 +41,13 @@ export async function createExperience(
   try {
     const basePriceCents = eurosStringToCents(data.basePriceEuros);
 
+    const { minPriceCents, maxPriceCents } = computeMinMaxPrice({
+      basePriceCents,
+      minParticipants: data.minParticipants,
+      maxParticipants: data.maxParticipants,
+      pricingRules: null,
+    });
+
     const experience = await prisma.experience.create({
       data: {
         hostId: user.id,
@@ -57,6 +64,8 @@ export async function createExperience(
         currency: "EUR",
         basePriceCents,
         vatRateBps: data.vatRateBps,
+        minPriceCents,
+        maxPriceCents,
         // isPublished defaults to false
       },
     });
@@ -91,10 +100,23 @@ export async function updateExperience(
     return { error: "Not your experience" };
 
   try {
-    const updateData: Record<string, unknown> = { ...rest };
-    if (basePriceEuros) {
-      updateData.basePriceCents = eurosStringToCents(basePriceEuros);
-    }
+    const newBasePriceCents = basePriceEuros
+      ? eurosStringToCents(basePriceEuros)
+      : experience.basePriceCents;
+
+    const { minPriceCents, maxPriceCents } = computeMinMaxPrice({
+      basePriceCents: newBasePriceCents,
+      minParticipants: rest.minParticipants ?? experience.minParticipants,
+      maxParticipants: rest.maxParticipants ?? experience.maxParticipants,
+      pricingRules: null,
+    });
+
+    const updateData: Record<string, unknown> = {
+      ...rest,
+      basePriceCents: newBasePriceCents,
+      minPriceCents,
+      maxPriceCents,
+    };
 
     await prisma.experience.update({ where: { id }, data: updateData });
     revalidatePath(`/host/experiences/${id}`);
