@@ -1,6 +1,6 @@
-// src/app/layout.tsx
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import { ProvidersTanstack } from "@/components/shared/ProvidersTanstack";
 import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body suppressHydrationWarning>
-          {children}
+          <ProvidersTanstack>
+            {children}
+          </ProvidersTanstack>
           <Toaster />
         </body>
       </html>

@@ -1,17 +1,26 @@
-// KPI summary card (total bookings, revenue, avg rating, etc.).
-// Implementation added in dashboard step.
-interface KpiCardProps {
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { LucideIcon } from "lucide-react";
+
+interface Props {
   label: string;
-  value: string | number;
-  sub?: string;
+  value: string;
+  icon: LucideIcon;
+  hint?: string;
 }
 
-export function KpiCard({ label, value, sub }: KpiCardProps) {
+export function KpiCard({ label, value, icon: Icon, hint }: Props) {
   return (
-    <div className="rounded-lg border p-4">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-      {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-    </div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {label}
+        </CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+      </CardContent>
+    </Card>
   );
 }

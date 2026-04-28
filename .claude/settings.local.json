@@ -5,7 +5,17 @@
       "Bash(npx tsc *)",
       "Bash(xargs grep *)",
       "Bash(npx shadcn@latest add form --yes)",
-      "Bash(node -e \"const r = require\\('radix-ui'\\); console.log\\(typeof r.Slot, Object.keys\\(r.Slot || {}\\)\\)\")"
+      "Bash(node -e \"const r = require\\('radix-ui'\\); console.log\\(typeof r.Slot, Object.keys\\(r.Slot || {}\\)\\)\")",
+      "Bash(npm install *)",
+      "Bash(node -e \"require\\('@react-email/components'\\); console.log\\('ok'\\)\")",
+      "Bash(node -e \"const r = require\\('@react-email/components'\\); console.log\\(Object.keys\\(r\\).filter\\(k => k.toLowerCase\\(\\).includes\\('pixel'\\) || k === 'Tailwind' || k === 'Button' || k === 'Preview' || k === 'Hr' || k === 'Img'\\)\\)\")",
+      "Bash(node -e \"const p = require\\('@prisma/client'\\); console.log\\(typeof p.Prisma\\)\")",
+      "Bash(node -e \"const {Coins,CalendarDays,Star,Users} = require\\('lucide-react'\\); console.log\\(!!Coins,!!CalendarDays,!!Star,!!Users\\)\")",
+      "Bash(node -e \"const l = require\\('lucide-react'\\); console.log\\(typeof l.LucideIcon\\)\")",
+      "Bash(node -e \"console.log\\(require\\('c:/Users/riaus/OneDrive/Desktop/CODE/erlebnisly/node_modules/recharts/package.json'\\).version\\)\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\riaus\\OneDrive\\Desktop\\CODE\\erlebnisly\\src\\app\\api\\me\\notifications\\[id]"
     ]
   }
 }
