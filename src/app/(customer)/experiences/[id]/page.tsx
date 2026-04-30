@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { formatCentsEUR } from "@/lib/pricing/utils";
 import { getExperienceSlotsWithAvailability } from "@/lib/queries/availability";
+import { ReviewList } from "@/components/customer/ReviewList";
+import { SimilarExperiences } from "@/components/customer/SimilarExperiences";
 import BookingWidget from "./_components/BookingWidget";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
@@ -106,6 +108,12 @@ export default async function ExperienceDetailPage({
                 </div>
               </div>
             )}
+
+            {/* Reviews */}
+            <div className="bg-white border border-ds-outline-variant rounded-ds-lg p-6 shadow-sm">
+              <h3 className="type-title-sm text-ds-on-surface mb-4">Bewertungen</h3>
+              <ReviewList experienceId={experience.id} />
+            </div>
           </div>
 
           {/* Right: booking widget */}
@@ -131,6 +139,8 @@ export default async function ExperienceDetailPage({
             </div>
           </div>
         </div>
+
+        <SimilarExperiences experienceId={experience.id} />
       </div>
     </>
   );

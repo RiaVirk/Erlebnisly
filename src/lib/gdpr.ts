@@ -1,12 +1,40 @@
-"server-only";
+import "server-only";
+import { prisma } from "./prisma";
 
-// GDPR Art. 20 (export) and Art. 17 (erasure / anonymisation).
-// Implementation filled in during the GDPR step.
+export async function exportUserData(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      hostProfile: true,
+      mollieConnect: {
+        select: {
+          mollieProfileId: true,
+          chargesEnabled: true,
+          payoutsEnabled: true,
+          isOnboarded: true,
+          createdAt: true,
+        },
+      },
+      experiences: { where: { deletedAt: null } },
+      bookings: {
+        include: {
+          participants: true,
+          events: true,
+          timeSlot: { include: { experience: { select: { title: true } } } },
+        },
+      },
+      reviews: true,
+      wishlistItems: { include: { experience: { select: { title: true } } } },
+      waitlistEntries: { include: { timeSlot: true } },
+      notifications: true,
+    },
+  });
 
-export async function exportUserData(_userId: string): Promise<object> {
-  throw new Error("Not yet implemented");
-}
+  if (!user) return null;
 
-export async function anonymizeUser(_userId: string): Promise<void> {
-  throw new Error("Not yet implemented");
+  return {
+    exportedAt: new Date().toISOString(),
+    schemaVersion: 1,
+    user,
+  };
 }

@@ -36,6 +36,19 @@ describe("decideRefund — customer cancellation", () => {
   });
 });
 
+describe("decideRefund — edge cases", () => {
+  it("partial refund cents floors odd values (Math.floor, no rounding up)", () => {
+    const d = decideRefund({
+      totalPriceCents: 9999,
+      slotStartTime: SLOT,
+      cancelledBy: "customer",
+      now: now(36),
+    });
+    expect(d.kind).toBe("partial");
+    if (d.kind !== "none") expect(d.refundCents).toBe(4999); // Math.floor(9999/2)
+  });
+});
+
 describe("decideRefund — host / admin cancellation", () => {
   it("host always gets full refund", () => {
     const d = decideRefund({ totalPriceCents: 8_000, slotStartTime: SLOT, cancelledBy: "host", now: now(1) });

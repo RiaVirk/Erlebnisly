@@ -41,7 +41,7 @@ export function EarningsChart({ data }: { data: MonthlyEarning[] }) {
           />
           <Tooltip
             cursor={{ fill: "rgba(2, 132, 199, 0.08)" }}
-            formatter={(v: number) => [formatEur(v), "Einnahmen"]}
+            formatter={(v) => [formatEur(Number(v ?? 0)), "Einnahmen"]}
             contentStyle={{
               borderRadius: 6,
               border: "1px solid #e5e7eb",

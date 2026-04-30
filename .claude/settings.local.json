@@ -12,7 +12,11 @@
       "Bash(node -e \"const p = require\\('@prisma/client'\\); console.log\\(typeof p.Prisma\\)\")",
       "Bash(node -e \"const {Coins,CalendarDays,Star,Users} = require\\('lucide-react'\\); console.log\\(!!Coins,!!CalendarDays,!!Star,!!Users\\)\")",
       "Bash(node -e \"const l = require\\('lucide-react'\\); console.log\\(typeof l.LucideIcon\\)\")",
-      "Bash(node -e \"console.log\\(require\\('c:/Users/riaus/OneDrive/Desktop/CODE/erlebnisly/node_modules/recharts/package.json'\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\('c:/Users/riaus/OneDrive/Desktop/CODE/erlebnisly/node_modules/recharts/package.json'\\).version\\)\")",
+      "Bash(npx shadcn@latest add slider --yes)",
+      "Bash(node -e \"const p=require\\('./node_modules/vitest/package.json'\\); console.log\\('vitest', p.version\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(ls node_modules/@testing-library/jest-dom/vitest*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\riaus\\OneDrive\\Desktop\\CODE\\erlebnisly\\src\\app\\api\\me\\notifications\\[id]"

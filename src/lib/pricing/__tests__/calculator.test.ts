@@ -196,6 +196,41 @@ describe("combined rules", () => {
   });
 });
 
+// ─── Compound multipliers ─────────────────────────────────────────────────────
+describe("compound multipliers", () => {
+  it("peak × surge compound multiplicatively (not additively)", () => {
+    // 14 h before slot: surge fires; slot is in summer: peak fires
+    const r = calculatePrice({
+      basePriceCents: 5000,
+      participants: 1,
+      addOnsCents: 0,
+      slotStartTime: new Date("2026-06-15T10:00:00Z"),
+      now: new Date("2026-06-14T20:00:00Z"),          // 14 h before
+      rawRules: {
+        peakSeasons: [{ startDate: "2026-06-01T00:00:00Z", endDate: "2026-08-31T23:59:59Z", multiplierBps: 15000 }],
+        lastMinuteSurge: { hoursBeforeStart: 24, multiplierBps: 12000 },
+      },
+    });
+    // 5000 × 1.5 (peak) = 7500; × 1.2 (surge) = 9000
+    expect(r.totalCents).toBe(9000);
+    expect(r.appliedRules).toHaveLength(2);
+  });
+
+  it("add-ons are NOT discounted by group discount (anti-double-discount)", () => {
+    const r = calculatePrice({
+      basePriceCents: 5000,
+      participants: 5,
+      addOnsCents: 1500,
+      slotStartTime: hoursFrom(48),
+      rawRules: { groupDiscount: { minParticipants: 4, discountPercentageBps: 1000 } },
+    });
+    // subtotal = 5 × 5000 = 25000, −10% = 22500; + addOns 1500 = 24000
+    expect(r.totalCents).toBe(24000);
+    expect(r.subtotalCents).toBe(22500);
+    expect(r.addOnsCents).toBe(1500);
+  });
+});
+
 // ─── Rounding ─────────────────────────────────────────────────────────────────
 describe("rounding", () => {
   it("always returns an integer (no fractional cents)", () => {

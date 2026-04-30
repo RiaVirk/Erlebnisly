@@ -1,22 +1,18 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
+import NextError from "next/error";
 
-export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
   useEffect(() => {
-    console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (
-    <html>
-      <body style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif" }}>
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontSize: 24, fontWeight: 700 }}>Kritischer Fehler</h2>
-          <p style={{ color: "#666" }}>Die Seite konnte nicht geladen werden.</p>
-          <button onClick={reset} style={{ marginTop: 16, padding: "8px 16px" }}>
-            Erneut versuchen
-          </button>
-        </div>
+    <html lang="de">
+      <body>
+        <NextError statusCode={0} />
       </body>
     </html>
   );

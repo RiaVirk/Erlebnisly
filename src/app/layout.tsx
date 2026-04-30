@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { ProvidersTanstack } from "@/components/shared/ProvidersTanstack";
+import { CookieBanner } from "@/components/legal/CookieBanner";
 import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </ProvidersTanstack>
           <Toaster />
+          <CookieBanner />
         </body>
       </html>
     </ClerkProvider>

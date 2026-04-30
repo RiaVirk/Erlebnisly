@@ -5,8 +5,19 @@ import { prisma } from "@/lib/prisma";
 import { encrypt } from "@/lib/crypto";
 import { exchangeCodeForTokens } from "@/lib/mollie-oauth";
 import { refreshMollieOnboarding } from "@/lib/mollie-onboarding";
+import { rateLimit, getIp } from "@/lib/ratelimit";
 
 export async function GET(req: NextRequest) {
+  const { success } = await rateLimit("mollie-callback", getIp(req), {
+    tokens: 10,
+    window: "1 m",
+  });
+  if (!success) {
+    return NextResponse.redirect(
+      new URL("/host/connect-mollie?error=rate_limited", req.url),
+    );
+  }
+
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const returnedState = url.searchParams.get("state");

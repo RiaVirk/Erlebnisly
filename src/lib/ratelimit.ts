@@ -1,27 +1,44 @@
-"server-only";
+import "server-only";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+import { env } from "./env";
 
-import { env } from "@/lib/env";
+export { getIp } from "./get-ip";
 
-// Returns the client IP from the x-forwarded-for header (Next.js 16 — req.ip removed).
-export function getIp(req: Request): string {
-  const xff = req.headers.get("x-forwarded-for");
-  return xff?.split(",")[0]?.trim() ?? "anonymous";
+const redis =
+  env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: env.UPSTASH_REDIS_REST_URL,
+        token: env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
+
+const limiters = new Map<string, Ratelimit>();
+
+interface Config {
+  tokens: number;
+  window: `${number} ${"s" | "m" | "h" | "d"}`;
 }
 
-// Ratelimit is optional: only active when Upstash env vars are present.
-// Install @upstash/ratelimit and @upstash/redis, then uncomment below.
-export async function checkRateLimit(
-  _identifier: string,
-  _limit = 10,
-  _window = "10 s",
-): Promise<{ success: boolean }> {
-  if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
-    return { success: true };
+export async function rateLimit(
+  bucket: string,
+  identifier: string,
+  config: Config,
+): Promise<{ success: boolean; remaining: number; reset: number; limit: number }> {
+  if (!redis) {
+    return { success: true, remaining: config.tokens, reset: 0, limit: config.tokens };
   }
-  // const { Ratelimit } = await import("@upstash/ratelimit");
-  // const { Redis } = await import("@upstash/redis");
-  // const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
-  // const ratelimit = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(_limit, _window) });
-  // return ratelimit.limit(_identifier);
-  return { success: true };
+
+  let limiter = limiters.get(bucket);
+  if (!limiter) {
+    limiter = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(config.tokens, config.window),
+      prefix: `erlebnisly:rl:${bucket}`,
+      analytics: true,
+    });
+    limiters.set(bucket, limiter);
+  }
+
+  return limiter.limit(identifier);
 }

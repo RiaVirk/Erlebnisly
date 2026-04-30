@@ -3,12 +3,19 @@ import { PaymentStatus } from "@mollie/api-client";
 import { prisma } from "@/lib/prisma";
 import { getHostMollieClient } from "@/lib/mollie";
 import { promoteNextWaitlistEntry } from "@/lib/waitlist-promotion";
+import { rateLimit, getIp } from "@/lib/ratelimit";
 import type { BookingStatus } from "@prisma/client";
 
 // Classic Mollie webhooks POST form data: id=tr_xxx — no signature to verify.
 // We verify by re-fetching the payment server-to-server.
 
 export async function POST(req: NextRequest) {
+  const { success } = await rateLimit("mollie-webhook", getIp(req), {
+    tokens: 60,
+    window: "1 m",
+  });
+  if (!success) return new NextResponse("Too many requests", { status: 429 });
+
   const text = await req.text();
   const params = new URLSearchParams(text);
   const molliePaymentId = params.get("id");
@@ -100,6 +107,37 @@ export async function POST(req: NextRequest) {
   }
 
   return new NextResponse("ok", { status: 200 });
+}
+
+// Pure decision function — extracted for testability, no DB or Mollie imports.
+export function decideNextStatus(
+  current: BookingStatus,
+  paymentStatus: string,
+  refundedCents: number,
+  bookedCents: number,
+  spotStillAvailable: boolean,
+): { newStatus: BookingStatus | null; reason: string } {
+  if (refundedCents > 0) {
+    return {
+      newStatus: refundedCents >= bookedCents ? "REFUNDED" : "PARTIALLY_REFUNDED",
+      reason: `Refund: ${refundedCents}`,
+    };
+  }
+  if (paymentStatus === "paid") {
+    return spotStillAvailable
+      ? { newStatus: "CONFIRMED", reason: "Mollie status: paid" }
+      : { newStatus: "NEEDS_REVIEW", reason: "Paid after hold expired" };
+  }
+  if (
+    paymentStatus === "canceled" ||
+    paymentStatus === "expired" ||
+    paymentStatus === "failed"
+  ) {
+    if (current === "RESERVED_HOLD") {
+      return { newStatus: "EXPIRED_HOLD", reason: `Mollie: ${paymentStatus}` };
+    }
+  }
+  return { newStatus: null, reason: "no transition" };
 }
 
 function mapPaymentStatus(

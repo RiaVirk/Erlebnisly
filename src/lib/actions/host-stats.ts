@@ -84,7 +84,7 @@ export async function getMonthlyEarnings(
     const found = rows.find((r) => r.month.getTime() === m.getTime());
     series.push({
       month: format(m, "MMM yyyy"),
-      earningsCents: Number(found?.total ?? 0n),
+      earningsCents: Number(found?.total ?? BigInt(0)),
     });
   }
   return series;

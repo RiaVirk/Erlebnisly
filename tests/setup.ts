@@ -1,7 +1,34 @@
-// Vitest global setup
-// Install happy-dom for browser-environment tests: npm i -D happy-dom
-// Then set environment: "happy-dom" in vitest.config.ts for those tests.
+import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
-// Silence expected console.error noise in unit tests
-vi.spyOn(console, "error").mockImplementation(() => {});
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/",
+  redirect: vi.fn(),
+  notFound: vi.fn(),
+}));
+
+// Renders a plain <img> — Recharts and avatar tests need this
+vi.mock("next/image", () => ({
+  // eslint-disable-next-line @next/next/no-img-element, @typescript-eslint/no-explicit-any
+  default: (props: Record<string, unknown>) =>
+    require("react").createElement("img", props as any),
+}));
+
+vi.mock("@clerk/nextjs/server", () => ({
+  auth: async () => ({
+    userId: "test_clerk_user",
+    sessionClaims: { metadata: { role: "CUSTOMER" } },
+  }),
+  currentUser: async () => ({
+    id: "test_clerk_user",
+    firstName: "Test",
+  }),
+}));
