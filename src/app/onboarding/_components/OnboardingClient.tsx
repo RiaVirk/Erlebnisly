@@ -3,8 +3,6 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setUserRole } from "@/lib/actions/user";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export default function OnboardingClient() {
@@ -25,53 +23,122 @@ export default function OnboardingClient() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-lg w-full space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Welcome to Bookly</h1>
-          <p className="text-muted-foreground mt-2">How will you use Bookly?</p>
-        </div>
+    <div
+      className="relative h-screen overflow-hidden text-white font-sans flex flex-col items-center justify-center px-6 selection:bg-[#10b981] selection:text-white"
+      style={{ background: "#020617" }}
+    >
+      {/* Radial gradient overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle at top right, rgba(16,185,129,0.1), transparent), radial-gradient(circle at bottom left, rgba(15,23,42,1), #020617)",
+        }}
+      />
 
-        <div className="grid grid-cols-2 gap-4">
-          <Card
-            className={`p-6 cursor-pointer border-2 transition-colors ${
-              selected === "CUSTOMER"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50"
-            }`}
+      {/* Light leaks */}
+      <div className="onboarding-light-leak -top-[100px] -left-[100px]" />
+      <div className="onboarding-light-leak -bottom-[100px] -right-[100px]" />
+
+      {/* Grid overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      {/* Content */}
+      <main className="relative z-10 flex flex-col items-center w-full">
+
+        {/* Header */}
+        <header className="text-center mb-16 onboarding-fade-in">
+          <div className="mb-4 inline-flex items-center space-x-2">
+            <div className="w-8 h-8 bg-[#10b981] rounded-[4px] flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#020617]" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+              </svg>
+            </div>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#10b981]">
+              Erlebnisly
+            </span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Welcome to Erlebnisly</h1>
+          <p className="text-slate-400 text-lg max-w-md mx-auto font-light">
+            How will you use Erlebnisly today?
+          </p>
+        </header>
+
+        {/* Selection cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl onboarding-fade-in onboarding-delay-1">
+
+          {/* Explore */}
+          <button
+            className={`onboarding-glass-card p-10 rounded-[4px] text-left group flex flex-col h-full focus:outline-none${selected === "CUSTOMER" ? " selected" : ""}`}
             onClick={() => setSelected("CUSTOMER")}
           >
-            <div className="text-3xl mb-3">🗺️</div>
-            <h2 className="font-semibold text-lg">I want to explore</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Browse and book unique experiences
+            <div className="mb-8 w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+              <svg className="w-7 h-7 text-white/70 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-3">I want to explore</h3>
+            <p className="text-slate-400 leading-relaxed font-light">
+              Browse and book unique experiences, from urban adventures to creative workshops.
             </p>
-          </Card>
+            <div className="mt-auto pt-8 flex items-center text-xs font-bold tracking-widest text-slate-500 group-hover:text-[#10b981] transition-colors">
+              DISCOVER EXPERIENCES
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </div>
+          </button>
 
-          <Card
-            className={`p-6 cursor-pointer border-2 transition-colors ${
-              selected === "HOST"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50"
-            }`}
+          {/* Host */}
+          <button
+            className={`onboarding-glass-card p-10 rounded-[4px] text-left group flex flex-col h-full focus:outline-none${selected === "HOST" ? " selected" : ""}`}
             onClick={() => setSelected("HOST")}
           >
-            <div className="text-3xl mb-3">🎯</div>
-            <h2 className="font-semibold text-lg">I want to host</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Create and sell your own experiences
+            <div className="mb-8 w-14 h-14 rounded-full bg-[#10b981]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+              <svg className="w-7 h-7 text-[#10b981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-3">I want to host</h3>
+            <p className="text-slate-400 leading-relaxed font-light">
+              Create and sell your own experiences. Access host analytics, booking management, and payouts.
             </p>
-          </Card>
+            <div className="mt-auto pt-8 flex items-center text-xs font-bold tracking-widest text-slate-500 group-hover:text-[#10b981] transition-colors">
+              HOST DASHBOARD
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+              </svg>
+            </div>
+          </button>
         </div>
 
-        <Button
-          className="w-full"
-          onClick={handleContinue}
-          disabled={!selected || isPending}
-        >
-          {isPending ? "Setting up your account..." : "Continue"}
-        </Button>
-      </div>
+        {/* Continue button */}
+        <div className="mt-12 w-full max-w-4xl flex justify-center onboarding-fade-in onboarding-delay-2">
+          <button
+            className={`w-full md:w-auto px-12 py-4 font-bold rounded-[4px] transition-all duration-300 uppercase tracking-widest text-sm shadow-lg ${
+              !selected || isPending
+                ? "bg-[#10b981]/50 text-white opacity-50 cursor-not-allowed"
+                : "bg-[#10b981] text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] active:scale-[0.98]"
+            }`}
+            disabled={!selected || isPending}
+            onClick={handleContinue}
+          >
+            {isPending ? "Setting up your account…" : "Continue"}
+          </button>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="absolute bottom-8 text-slate-500 text-xs tracking-wide onboarding-fade-in onboarding-delay-2">
+        © 2025 Erlebnisly. All rights reserved.
+      </footer>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { LucideIcon } from "lucide-react";
 
 interface Props {
@@ -10,17 +9,13 @@ interface Props {
 
 export function KpiCard({ label, value, icon: Icon, hint }: Props) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {label}
-        </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-      </CardContent>
-    </Card>
+    <div className="bg-white rounded-ds-lg border border-ds-outline-variant p-6 shadow-[0_4px_20px_rgba(15,23,42,0.08)]">
+      <div className="flex items-center justify-between mb-3">
+        <p className="type-label-caps text-ds-on-surface-variant">{label}</p>
+        <Icon className="h-4 w-4 text-ds-secondary" />
+      </div>
+      <p className="type-display-lg text-ds-on-surface">{value}</p>
+      {hint && <p className="type-body-sm text-ds-on-surface-variant mt-1">{hint}</p>}
+    </div>
   );
 }

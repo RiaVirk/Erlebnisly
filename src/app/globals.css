@@ -130,30 +130,68 @@
   }
 }
 
+/* ─── Onboarding page ───────────────────────────────────────────────*/
+@keyframes onboarding-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.onboarding-fade-in        { animation: onboarding-fade-in 0.8s ease-out forwards; }
+.onboarding-delay-1        { opacity: 0; animation-delay: 0.2s; }
+.onboarding-delay-2        { opacity: 0; animation-delay: 0.4s; }
+
+.onboarding-light-leak {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.onboarding-glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.onboarding-glass-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(16, 185, 129, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+.onboarding-glass-card.selected {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
 /* ─── Pro-Activity B2B Design System Tokens ─────────────────────────
    Named with ds- prefix to avoid clashing with shadcn's primary/secondary.
    Generates utilities: bg-ds-secondary, text-ds-on-surface, rounded-ds-lg, etc.
 ──────────────────────────────────────────────────────────────────── */
 @theme {
   /* Surfaces */
-  --color-ds-surface:                   #f7f9fb;
-  --color-ds-surface-dim:               #d8dadc;
-  --color-ds-surface-bright:            #f7f9fb;
-  --color-ds-surface-container-lowest:  #ffffff;
-  --color-ds-surface-container-low:     #f2f4f6;
-  --color-ds-surface-container:         #eceef0;
-  --color-ds-surface-container-high:    #e6e8ea;
-  --color-ds-surface-container-highest: #e0e3e5;
+  --color-ds-surface:                   #F7F9FB;
+  --color-ds-surface-dim:               #D8DADC;
+  --color-ds-surface-bright:            #F7F9FB;
+  --color-ds-surface-container-lowest:  #FFFFFF;
+  --color-ds-surface-container-low:     #F2F4F6;
+  --color-ds-surface-container:         #E2E8F0;
+  --color-ds-surface-container-high:    #CBD5E1;
+  --color-ds-surface-container-highest: #E2E8F0;
 
   /* On-surface */
-  --color-ds-on-surface:         #191c1e;
-  --color-ds-on-surface-variant: #45464d;
-  --color-ds-inverse-surface:    #2d3133;
-  --color-ds-inverse-on-surface: #eff1f3;
+  --color-ds-on-surface:         #0F172A;
+  --color-ds-on-surface-variant: #475569;
+  --color-ds-inverse-surface:    #1E293B;
+  --color-ds-inverse-on-surface: #F1F5F9;
 
   /* Outlines */
-  --color-ds-outline:         #76777d;
-  --color-ds-outline-variant: #c6c6cd;
+  --color-ds-outline:         #94A3B8;
+  --color-ds-outline-variant: #E2E8F0;
 
   /* Primary — Midnight Black */
   --color-ds-primary:              #000000;
@@ -163,13 +201,13 @@
   --color-ds-primary-fixed:        #dae2fd;
   --color-ds-primary-fixed-dim:    #bec6e0;
 
-  /* Secondary — Emerald Green */
-  --color-ds-secondary:              #006c49;
+  /* Secondary — Emerald Green (DESIGN.md primary #10B981) */
+  --color-ds-secondary:              #10B981;
   --color-ds-on-secondary:           #ffffff;
-  --color-ds-secondary-container:    #6cf8bb;
-  --color-ds-on-secondary-container: #00714d;
-  --color-ds-secondary-fixed:        #6ffbbe;
-  --color-ds-secondary-fixed-dim:    #4edea3;
+  --color-ds-secondary-container:    #D1FAE5;
+  --color-ds-on-secondary-container: #065f46;
+  --color-ds-secondary-fixed:        #34D399;
+  --color-ds-secondary-fixed-dim:    #059669;
 
   /* Tertiary */
   --color-ds-tertiary-container:    #0d1c2f;
@@ -182,8 +220,8 @@
   --color-ds-on-error-container: #93000a;
 
   /* Background */
-  --color-ds-background:    #f7f9fb;
-  --color-ds-on-background: #191c1e;
+  --color-ds-background:    #F7F9FB;
+  --color-ds-on-background: #0F172A;
 
   /* ── Typography scale ─────────────────────────────────────────── */
   --text-display-lg:   36px;

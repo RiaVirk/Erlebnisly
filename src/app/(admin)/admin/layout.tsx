@@ -9,17 +9,35 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (role !== "ADMIN") redirect("/");
 
   return (
-    <div className="min-h-screen">
-      <nav className="border-b bg-slate-900 text-white">
-        <div className="mx-auto flex max-w-7xl items-center gap-6 px-6 py-3 text-sm">
-          <span className="font-semibold">Admin</span>
-          <Link href="/admin/dashboard" className="opacity-80 hover:opacity-100">Dashboard</Link>
-          <Link href="/admin/bookings" className="opacity-80 hover:opacity-100">Bookings</Link>
-          <Link href="/admin/experiences" className="opacity-80 hover:opacity-100">Experiences</Link>
-          <Link href="/admin/users" className="opacity-80 hover:opacity-100">Users</Link>
+    <div className="min-h-screen bg-ds-background">
+      <nav className="sticky top-0 z-50 h-16 border-b border-white/10 bg-[#0F172A] flex items-center justify-between px-8">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-ds-secondary rounded-[4px] flex items-center justify-center">
+              <span className="material-symbols-outlined text-white" style={{ fontSize: 14 }}>shield</span>
+            </div>
+            <span className="type-body-sm font-bold text-white tracking-wide">Admin</span>
+          </div>
+          <div className="flex items-center gap-1">
+            {[
+              { label: "Dashboard", href: "/admin/dashboard" },
+              { label: "Bookings",  href: "/admin/bookings" },
+              { label: "Experiences", href: "/admin/experiences" },
+              { label: "Users",     href: "/admin/users" },
+            ].map(({ label, href }) => (
+              <Link
+                key={href}
+                href={href}
+                className="px-3 py-1.5 rounded-ds type-body-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
         </div>
+        <span className="type-label-caps text-white/40">Erlebnisly Platform</span>
       </nav>
-      <div className="mx-auto max-w-7xl p-6">{children}</div>
+      <div className="mx-auto max-w-7xl p-8">{children}</div>
     </div>
   );
 }

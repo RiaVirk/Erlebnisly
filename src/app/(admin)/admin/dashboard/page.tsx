@@ -27,38 +27,42 @@ export default async function AdminDashboardPage() {
   const s = await platformStats();
 
   const kpis = [
-    { label: "Total users", value: s.totalUsers.toLocaleString("de-DE") },
-    { label: "Hosts", value: s.totalHosts.toLocaleString("de-DE") },
-    { label: "Confirmed bookings", value: s.totalBookings.toLocaleString("de-DE") },
-    {
-      label: "GMV this month",
-      value: formatCentsEUR(s.gmv._sum.totalPriceCents ?? 0),
-    },
-    {
-      label: "Platform fee this month",
-      value: formatCentsEUR(s.gmv._sum.platformFeeCents ?? 0),
-    },
-    {
-      label: "Needs review",
-      value: s.needsReview.toString(),
-      alert: s.needsReview > 0,
-    },
+    { label: "Total users",            value: s.totalUsers.toLocaleString("de-DE"),                     icon: "group",              alert: false },
+    { label: "Hosts",                  value: s.totalHosts.toLocaleString("de-DE"),                     icon: "travel_explore",     alert: false },
+    { label: "Confirmed bookings",     value: s.totalBookings.toLocaleString("de-DE"),                  icon: "confirmation_number", alert: false },
+    { label: "GMV this month",         value: formatCentsEUR(s.gmv._sum.totalPriceCents ?? 0),          icon: "payments",           alert: false },
+    { label: "Platform fee this month",value: formatCentsEUR(s.gmv._sum.platformFeeCents ?? 0),         icon: "account_balance",    alert: false },
+    { label: "Needs review",           value: s.needsReview.toString(),                                  icon: "flag",               alert: s.needsReview > 0 },
   ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Platform Dashboard</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="type-headline-md text-ds-on-surface">Platform Dashboard</h1>
+        <p className="type-body-sm text-ds-on-surface-variant mt-1">Real-time platform metrics</p>
+      </div>
+
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        {kpis.map((k) => (
+        {kpis.map(({ label, value, icon, alert }) => (
           <div
-            key={k.label}
-            className={`rounded-lg border p-5 ${k.alert ? "border-red-300 bg-red-50" : "bg-white"}`}
+            key={label}
+            className={`rounded-ds-lg border p-6 shadow-[0_1px_3px_rgba(15,23,42,0.06)] ${
+              alert
+                ? "border-ds-error/30 bg-ds-error-container/20"
+                : "bg-white border-ds-outline-variant"
+            }`}
           >
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {k.label}
-            </p>
-            <p className={`mt-1 text-2xl font-bold ${k.alert ? "text-red-700" : ""}`}>
-              {k.value}
+            <div className="flex items-center justify-between mb-3">
+              <p className="type-label-caps text-ds-on-surface-variant">{label}</p>
+              <span
+                className={`material-symbols-outlined text-title-sm ${alert ? "text-ds-error" : "text-ds-secondary"}`}
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                {icon}
+              </span>
+            </div>
+            <p className={`type-display-lg ${alert ? "text-ds-error" : "text-ds-on-surface"}`}>
+              {value}
             </p>
           </div>
         ))}
