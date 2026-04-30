@@ -19,6 +19,7 @@ const schema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
   SENTRY_AUTH_TOKEN: z.string().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
+  DEMO_MODE: z.enum(["true", "false"]).default("false").transform((v) => v === "true"),
 });
 
 export const env = schema.parse(process.env);
