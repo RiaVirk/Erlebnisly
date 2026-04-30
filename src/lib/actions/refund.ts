@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { getHostMollieClient } from "@/lib/mollie";
+import { env } from "@/lib/env";
 import { decideRefund } from "@/lib/refund-policy";
 import { promoteNextWaitlistEntry } from "@/lib/waitlist-promotion";
 import { revalidatePath } from "next/cache";
@@ -113,6 +114,26 @@ export async function cancelBookingAndRefund(input: CancelInput) {
         },
       }),
     ]);
+
+    if (env.DEMO_MODE && decision.kind !== "none") {
+      const finalStatus: BookingStatus =
+        refundCents >= booking.totalPriceCents ? "REFUNDED" : "PARTIALLY_REFUNDED";
+      await prisma.$transaction([
+        prisma.booking.update({
+          where: { id: booking.id },
+          data: { status: finalStatus },
+        }),
+        prisma.bookingEvent.create({
+          data: {
+            bookingId: booking.id,
+            actorId: dbUser.id,
+            previousStatus: "REFUND_PENDING",
+            newStatus: finalStatus,
+            reason: "Demo mode: refund auto-finalized",
+          },
+        }),
+      ]);
+    }
   }
 
   revalidatePath(`/bookings/${booking.id}`);

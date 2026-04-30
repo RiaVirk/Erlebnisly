@@ -3,11 +3,15 @@ import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { encrypt } from "@/lib/crypto";
+import { env } from "@/lib/env";
 import { exchangeCodeForTokens } from "@/lib/mollie-oauth";
 import { refreshMollieOnboarding } from "@/lib/mollie-onboarding";
 import { rateLimit, getIp } from "@/lib/ratelimit";
 
 export async function GET(req: NextRequest) {
+  if (env.DEMO_MODE) {
+    return NextResponse.redirect(new URL("/host/dashboard", req.url));
+  }
   const { success } = await rateLimit("mollie-callback", getIp(req), {
     tokens: 10,
     window: "1 m",

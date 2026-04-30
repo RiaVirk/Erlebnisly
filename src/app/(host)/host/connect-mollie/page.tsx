@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { env } from "@/lib/env";
 import { buildAuthorizeUrl } from "@/lib/mollie-oauth";
 import { disconnectMollie } from "@/lib/actions/mollie-connect";
 import { redirect as serverRedirect } from "next/navigation";
@@ -28,6 +29,43 @@ export default async function ConnectMolliePage({
     include: { mollieConnect: true },
   });
   if (!dbUser) redirect("/onboarding");
+
+  if (env.DEMO_MODE) {
+    async function fakeConnect() {
+      "use server";
+      const { userId: clerkUserId } = await auth();
+      if (!clerkUserId) redirect("/sign-in");
+      const dbUser = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+      if (!dbUser) redirect("/onboarding");
+
+      await prisma.mollieConnect.upsert({
+        where: { userId: dbUser.id },
+        create: {
+          userId: dbUser.id,
+          accessTokenEnc: "demo",
+          refreshTokenEnc: "demo",
+          expiresAt: new Date(Date.now() + 365 * 86400_000),
+          mollieProfileId: "pfl_demo",
+          chargesEnabled: true,
+          payoutsEnabled: true,
+          isOnboarded: true,
+        },
+        update: { chargesEnabled: true, isOnboarded: true },
+      });
+      redirect("/host/dashboard?mollie=connected");
+    }
+
+    return (
+      <form action={fakeConnect} className="p-8">
+        <h1 className="text-2xl font-bold">Demo mode</h1>
+        <p className="my-4 text-sm text-muted-foreground">
+          Mollie is bypassed in demo mode. Click below to instantly mark yourself as a connected
+          host.
+        </p>
+        <Button type="submit">Pretend to connect Mollie</Button>
+      </form>
+    );
+  }
 
   async function startConnect() {
     "use server";

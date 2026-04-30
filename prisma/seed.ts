@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma";
-import { addDays, setHours } from "date-fns";
+import { addDays, setHours, subDays } from "date-fns";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -158,6 +158,74 @@ async function main() {
   }
 
   console.log(`✅ ${SAMPLE_EXPERIENCES.length} experiences with slots`);
+
+  const demoCustomer = await prisma.user.upsert({
+    where: { clerkId: "demo_customer" },
+    update: {},
+    create: {
+      clerkId: "demo_customer",
+      role: "CUSTOMER",
+      email: "demo-customer@erlebnisly.test",
+      name: "Anna Schmidt",
+    },
+  });
+
+  const allExperiences = await prisma.experience.findMany({ include: { timeSlots: true } });
+
+  const REVIEW_COMMENTS = [
+    "Amazing experience, would do again!",
+    "Our host was knowledgeable and friendly.",
+    "Great way to spend an afternoon.",
+    "Highly recommend — exceeded expectations.",
+  ];
+
+  for (let i = 0; i < 30; i++) {
+    const exp = allExperiences[i % allExperiences.length];
+    if (!exp || exp.timeSlots.length === 0) continue;
+
+    const slotStart = subDays(new Date(), Math.floor(Math.random() * 180) + 2);
+    const slotEnd = new Date(slotStart.getTime() + exp.durationMinutes * 60_000);
+
+    const pastSlot = await prisma.timeSlot.create({
+      data: { experienceId: exp.id, startTime: slotStart, endTime: slotEnd },
+    });
+
+    const participants = 1 + Math.floor(Math.random() * 3);
+    const total = exp.basePriceCents * participants;
+    const fee = Math.round(total * 0.15);
+    const created = subDays(new Date(), Math.floor(Math.random() * 180));
+
+    const booking = await prisma.booking.create({
+      data: {
+        userId: demoCustomer.id,
+        timeSlotId: pastSlot.id,
+        status: "COMPLETED",
+        participantCount: participants,
+        currency: "EUR",
+        subtotalCents: total,
+        totalPriceCents: total,
+        platformFeeCents: fee,
+        hostPayoutCents: total - fee,
+        molliePaymentId: `tr_demo_seed_${i}`,
+        molliePaymentStatus: "paid",
+        createdAt: created,
+      },
+    });
+
+    if (Math.random() < 0.6) {
+      await prisma.review.create({
+        data: {
+          bookingId: booking.id,
+          userId: demoCustomer.id,
+          experienceId: exp.id,
+          rating: 4 + Math.floor(Math.random() * 2),
+          comment: REVIEW_COMMENTS[Math.floor(Math.random() * REVIEW_COMMENTS.length)],
+        },
+      });
+    }
+  }
+
+  console.log("✅ 30 demo completed bookings with reviews");
   console.log("Seed complete.");
 }
 

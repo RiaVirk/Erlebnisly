@@ -1,4 +1,5 @@
 import createMollieClient, { type MollieClient } from "@mollie/api-client";
+import { randomUUID } from "crypto";
 import { env } from "./env";
 import { prisma } from "./prisma";
 import { decrypt } from "./crypto";
@@ -18,6 +19,14 @@ export interface HostClient {
  * Throws HostNotConnectedError or HostNotOnboardedError on misconfiguration.
  */
 export async function getHostMollieClient(userId: string): Promise<HostClient> {
+  if (env.DEMO_MODE) {
+    return {
+      client: createDemoMollieClient() as unknown as MollieClient,
+      profileId: "pfl_demo",
+      platformFeeBps: 1500,
+    };
+  }
+
   const conn = await prisma.mollieConnect.findUnique({ where: { userId } });
   if (!conn) throw new HostNotConnectedError("Host has not connected Mollie");
   if (!conn.isOnboarded || !conn.chargesEnabled) {
@@ -53,4 +62,47 @@ export class HostNotOnboardedError extends Error {
     super(msg);
     this.name = "HostNotOnboardedError";
   }
+}
+
+function createDemoMollieClient() {
+  return {
+    payments: {
+      create: async (input: {
+        amount: { currency: string; value: string };
+        metadata?: { bookingId?: string };
+      }) => {
+        const id = `tr_demo_${randomUUID().slice(0, 12)}`;
+        const bookingId = input.metadata?.bookingId;
+        const checkoutUrl = `${env.APP_URL}/demo/checkout/${bookingId}?paymentId=${id}`;
+        return {
+          id,
+          status: "open" as const,
+          amount: input.amount,
+          metadata: input.metadata,
+          getCheckoutUrl: () => checkoutUrl,
+        };
+      },
+      get: async (id: string) => {
+        return {
+          id,
+          status: "open" as const,
+          amountRefunded: undefined,
+          metadata: {},
+        };
+      },
+    },
+    paymentRefunds: {
+      create: async (input: {
+        paymentId: string;
+        amount: { currency: string; value: string };
+      }) => {
+        return {
+          id: `re_demo_${randomUUID().slice(0, 12)}`,
+          paymentId: input.paymentId,
+          amount: input.amount,
+          status: "refunded" as const,
+        };
+      },
+    },
+  };
 }
