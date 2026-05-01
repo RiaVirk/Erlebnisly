@@ -1,8 +1,18 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { Toaster } from "sonner";
+import dynamic from "next/dynamic";
 import { ProvidersTanstack } from "@/components/shared/ProvidersTanstack";
-import { CookieBanner } from "@/components/legal/CookieBanner";
 import "./globals.css";
+
+// Client-only — excluded from the SSR bundle to avoid null-React crashes
+// during static prerendering of server-only pages (legal pages, etc.)
+const Toaster = dynamic(
+  () => import("sonner").then((m) => ({ default: m.Toaster })),
+  { ssr: false }
+);
+const CookieBanner = dynamic(
+  () => import("@/components/legal/CookieBanner").then((m) => ({ default: m.CookieBanner })),
+  { ssr: false }
+);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
