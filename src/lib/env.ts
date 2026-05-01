@@ -14,7 +14,7 @@ const schema = z.object({
   ENCRYPTION_KEY: z.string().min(44),
   RESEND_API_KEY: z.string().min(1),
   EMAIL_FROM: z.email(),
-  CRON_SECRET: z.string().min(1),
+  CRON_SECRET: z.string().min(10),
   UPSTASH_REDIS_REST_URL: z.url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
   SENTRY_AUTH_TOKEN: z.string().optional(),
