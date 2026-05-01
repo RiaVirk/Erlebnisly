@@ -11,10 +11,12 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "dev": "next dev",
+    "postinstall": "prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "email": "email dev --dir src/emails"
+    "email": "email dev --dir src/emails",
+    "seed:bookings": "tsx prisma/seed-bookings.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.2.7",
