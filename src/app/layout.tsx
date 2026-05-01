@@ -1,18 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import dynamic from "next/dynamic";
 import { ProvidersTanstack } from "@/components/shared/ProvidersTanstack";
+import { ClientOnlyProviders } from "./_components/ClientOnlyProviders";
 import "./globals.css";
-
-// Client-only — excluded from the SSR bundle to avoid null-React crashes
-// during static prerendering of server-only pages (legal pages, etc.)
-const Toaster = dynamic(
-  () => import("sonner").then((m) => ({ default: m.Toaster })),
-  { ssr: false }
-);
-const CookieBanner = dynamic(
-  () => import("@/components/legal/CookieBanner").then((m) => ({ default: m.CookieBanner })),
-  { ssr: false }
-);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -34,8 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ProvidersTanstack>
             {children}
           </ProvidersTanstack>
-          <Toaster />
-          <CookieBanner />
+          <ClientOnlyProviders />
         </body>
       </html>
     </ClerkProvider>
