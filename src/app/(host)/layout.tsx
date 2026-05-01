@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import HostSidebar from "./_components/HostSidebar";
+import { ProvidersTanstack } from "@/components/shared/ProvidersTanstack";
 
 export default async function HostLayout({ children }: { children: React.ReactNode }) {
   const { userId, sessionClaims } = await auth();
@@ -10,9 +11,11 @@ export default async function HostLayout({ children }: { children: React.ReactNo
   if (role !== "HOST" && role !== "ADMIN") redirect("/dashboard");
 
   return (
-    <div className="min-h-screen bg-ds-background">
-      <HostSidebar />
-      <main className="ml-60 min-h-screen">{children}</main>
-    </div>
+    <ProvidersTanstack>
+      <div className="min-h-screen bg-ds-background">
+        <HostSidebar />
+        <main className="ml-60 min-h-screen">{children}</main>
+      </div>
+    </ProvidersTanstack>
   );
 }

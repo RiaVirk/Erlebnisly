@@ -1,5 +1,4 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { ProvidersTanstack } from "@/components/shared/ProvidersTanstack";
 import { ClientOnlyProviders } from "./_components/ClientOnlyProviders";
 import "./globals.css";
 
@@ -20,9 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body suppressHydrationWarning>
-          <ProvidersTanstack>
-            {children}
-          </ProvidersTanstack>
+          {children}
           <ClientOnlyProviders />
         </body>
       </html>
