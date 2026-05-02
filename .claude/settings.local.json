@@ -18,7 +18,12 @@
       "Bash(node -e ' *)",
       "Bash(ls node_modules/@testing-library/jest-dom/vitest*)",
       "WebFetch(domain:api.anthropic.com)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git commit *)",
+      "Bash(npm ls *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\riaus\\OneDrive\\Desktop\\CODE\\erlebnisly\\src\\app\\api\\me\\notifications\\[id]"
