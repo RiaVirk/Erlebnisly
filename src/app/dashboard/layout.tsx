@@ -1,15 +1,18 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import CustomerSidebar from "@/app/(customer)/_components/CustomerSidebar";
 import { ProvidersTanstack } from "@/components/shared/ProvidersTanstack";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ProvidersTanstack>
-      <div className="min-h-screen bg-ds-background flex">
-        <CustomerSidebar />
-        <div className="ml-60 flex-1 flex flex-col min-h-screen">
-          {children}
+    <ClerkProvider afterSignOutUrl="/">
+      <ProvidersTanstack>
+        <div className="min-h-screen bg-ds-background flex">
+          <CustomerSidebar />
+          <div className="ml-60 flex-1 flex flex-col min-h-screen">
+            {children}
+          </div>
         </div>
-      </div>
-    </ProvidersTanstack>
+      </ProvidersTanstack>
+    </ClerkProvider>
   );
 }

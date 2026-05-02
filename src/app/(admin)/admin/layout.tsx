@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -9,6 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (role !== "ADMIN") redirect("/");
 
   return (
+    <ClerkProvider afterSignOutUrl="/">
     <div className="min-h-screen bg-ds-background">
       <nav className="sticky top-0 z-50 h-16 border-b border-white/10 bg-[#0F172A] flex items-center justify-between px-8">
         <div className="flex items-center gap-8">
@@ -39,5 +41,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </nav>
       <div className="mx-auto max-w-7xl p-8">{children}</div>
     </div>
+    </ClerkProvider>
   );
 }

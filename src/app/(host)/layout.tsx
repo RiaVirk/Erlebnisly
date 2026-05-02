@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import HostSidebar from "./_components/HostSidebar";
@@ -11,11 +12,13 @@ export default async function HostLayout({ children }: { children: React.ReactNo
   if (role !== "HOST" && role !== "ADMIN") redirect("/dashboard");
 
   return (
-    <ProvidersTanstack>
-      <div className="min-h-screen bg-ds-background">
-        <HostSidebar />
-        <main className="ml-60 min-h-screen">{children}</main>
-      </div>
-    </ProvidersTanstack>
+    <ClerkProvider afterSignOutUrl="/">
+      <ProvidersTanstack>
+        <div className="min-h-screen bg-ds-background">
+          <HostSidebar />
+          <main className="ml-60 min-h-screen">{children}</main>
+        </div>
+      </ProvidersTanstack>
+    </ClerkProvider>
   );
 }

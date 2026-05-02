@@ -1,33 +1,32 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { ClientOnlyProviders } from "./_components/ClientOnlyProviders";
 import "./globals.css";
 
-// ClerkProvider's SSR bundle causes a null-React crash in Turbopack
-// when statically prerendering any page. Force all routes to SSR
-// on-demand instead of generating static HTML at build time.
+// ClerkProvider is intentionally NOT here — it is added only to the
+// layouts that actually render Clerk client components (UserButton,
+// SignIn, SignUp). Keeping it here caused a null-React SSR crash in
+// Turbopack's _global-error prerender bundle (Next.js 16 / Clerk 7).
+// Server-side auth() calls do not require ClerkProvider.
 export const dynamic = "force-dynamic";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider afterSignOutUrl="/">
-      <html lang="de">
-        <head>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          />
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-          />
-        </head>
-        <body suppressHydrationWarning>
-          {children}
-          <ClientOnlyProviders />
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="de">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+      </head>
+      <body suppressHydrationWarning>
+        {children}
+        <ClientOnlyProviders />
+      </body>
+    </html>
   );
 }
