@@ -1,5 +1,9 @@
 "use client";
 
+// _global-error bypasses the root layout so force-dynamic in layout.tsx
+// does not cascade here. Must be declared directly.
+export const dynamic = "force-dynamic";
+
 export default function GlobalError({
   error,
   reset,
