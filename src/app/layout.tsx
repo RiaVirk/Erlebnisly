@@ -2,6 +2,11 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ClientOnlyProviders } from "./_components/ClientOnlyProviders";
 import "./globals.css";
 
+// ClerkProvider's SSR bundle causes a null-React crash in Turbopack
+// when statically prerendering any page. Force all routes to SSR
+// on-demand instead of generating static HTML at build time.
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider afterSignOutUrl="/">
