@@ -16,7 +16,7 @@ export default async function HostLayout({ children }: { children: React.ReactNo
       <ProvidersTanstack>
         <div className="min-h-screen bg-ds-background">
           <HostSidebar />
-          <main className="ml-60 min-h-screen">{children}</main>
+          <main className="lg:ml-60 min-h-screen">{children}</main>
         </div>
       </ProvidersTanstack>
     </ClerkProvider>

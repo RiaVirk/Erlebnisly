@@ -16,37 +16,40 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-ds-background flex flex-col">
       {/* Nav */}
-      <nav className="h-16 border-b border-ds-outline-variant bg-white flex items-center justify-between px-8">
+      <nav className="h-16 border-b border-ds-outline-variant bg-white flex items-center justify-between px-4 sm:px-8">
         <img src="/logo.png" alt="Erlebnisly" className="h-8 w-auto" />
-        <div className="flex items-center gap-3">
-          <Link href="/sign-in" className="type-body-sm text-ds-on-surface-variant hover:text-ds-on-surface transition-colors px-4 py-2">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/sign-in" className="type-body-sm text-ds-on-surface-variant hover:text-ds-on-surface transition-colors px-3 sm:px-4 py-2 hidden sm:block">
             Sign in
           </Link>
-          <Link href="/sign-up" className="type-body-sm font-semibold bg-ds-primary text-ds-on-primary px-4 py-2 rounded-ds hover:opacity-90 transition-opacity">
+          <Link href="/sign-in" className="type-body-sm text-ds-on-surface-variant hover:text-ds-on-surface transition-colors px-3 py-2 sm:hidden">
+            Log in
+          </Link>
+          <Link href="/sign-up" className="type-body-sm font-semibold bg-ds-primary text-ds-on-primary px-3 sm:px-4 py-2 rounded-ds hover:opacity-90 transition-opacity">
             Get started
           </Link>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-24">
-        <div className="max-w-2xl">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ds-secondary-container/30 type-label-caps text-ds-secondary mb-6">
+      <section className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-16 sm:py-24">
+        <div className="max-w-2xl w-full">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ds-secondary-container/30 type-label-caps text-ds-secondary mb-5 sm:mb-6">
             <span className="material-symbols-outlined text-label-caps" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
             B2B Activity Management
           </span>
-          <h1 className="type-display-lg text-ds-on-surface mb-4">
-            Discover unique<br />experiences near you
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ds-on-surface mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+            Discover unique<br className="hidden sm:block" /> experiences near you
           </h1>
-          <p className="type-body-md text-ds-on-surface-variant mb-10 max-w-lg mx-auto">
+          <p className="type-body-md text-ds-on-surface-variant mb-8 sm:mb-10 max-w-lg mx-auto">
             Browse and book professional tours, workshops, and adventures. Hosts get powerful tools to manage bookings and time slots.
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link href="/sign-up" className="flex items-center gap-2 bg-ds-primary text-ds-on-primary px-6 py-3 rounded-ds type-body-md font-semibold hover:opacity-90 transition-opacity shadow-[0_4px_20px_rgba(255,77,0,0.15)]">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <Link href="/sign-up" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-ds-primary text-ds-on-primary px-6 py-3 rounded-ds type-body-md font-semibold hover:opacity-90 transition-opacity shadow-[0_4px_20px_rgba(255,77,0,0.15)]">
               <span className="material-symbols-outlined text-title-sm">rocket_launch</span>
               Get started free
             </Link>
-            <Link href="/experiences" className="flex items-center gap-2 border-2 border-ds-primary text-ds-primary px-6 py-3 rounded-ds type-body-md font-semibold hover:bg-ds-primary hover:text-ds-on-primary transition-all">
+            <Link href="/experiences" className="w-full sm:w-auto flex items-center justify-center gap-2 border-2 border-ds-primary text-ds-primary px-6 py-3 rounded-ds type-body-md font-semibold hover:bg-ds-primary hover:text-ds-on-primary transition-all">
               <span className="material-symbols-outlined text-title-sm">search</span>
               Browse experiences
             </Link>
@@ -55,8 +58,8 @@ export default async function HomePage() {
       </section>
 
       {/* Feature strip */}
-      <section className="border-t border-ds-outline-variant bg-white px-8 py-12">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+      <section className="border-t border-ds-outline-variant bg-white px-4 sm:px-8 py-10 sm:py-12">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
           {[
             { icon: "travel_explore", title: "Browse & Book", desc: "Search hundreds of experiences with real-time availability." },
             { icon: "confirmation_number", title: "Instant Hold", desc: "Secure your spot with a 15-minute payment hold." },
@@ -72,9 +75,9 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-ds-outline-variant bg-ds-surface-container-low px-8 py-6 flex items-center justify-between">
+      <footer className="border-t border-ds-outline-variant bg-ds-surface-container-low px-4 sm:px-8 py-5 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
         <span className="type-body-sm text-ds-on-surface-variant">© 2026 Erlebnisly</span>
-        <div className="flex gap-6">
+        <div className="flex gap-4 sm:gap-6">
           {[["Impressum", "/impressum"], ["Datenschutz", "/datenschutz"], ["AGB", "/agb"]].map(([label, href]) => (
             <Link key={href} href={href} className="type-body-sm text-ds-on-surface-variant hover:text-ds-on-surface transition-colors">
               {label}

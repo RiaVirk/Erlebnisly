@@ -108,7 +108,10 @@ export default function DashboardClient({
   nextBooking, recentBookings, wishlist, recommendations,
 }: Props) {
   const router = useRouter();
-  const [dark, setDark]             = useState(false);
+  const [dark, setDark]             = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("erlebnisly-dark") === "true";
+  });
   const [notifOpen, setNotifOpen]   = useState(false);
   const [notifs, setNotifs]         = useState(MOCK_NOTIFS);
   const [tab, setTab]               = useState<"all" | "upcoming" | "completed">("all");
@@ -116,8 +119,12 @@ export default function DashboardClient({
   const [searchQuery, setSearchQuery] = useState("");
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // Dark mode: toggle body class
-  useEffect(() => { document.body.classList.toggle("dark", dark); return () => { document.body.classList.remove("dark"); }; }, [dark]);
+  // Dark mode: sync body class + persist preference
+  useEffect(() => {
+    document.body.classList.toggle("dark", dark);
+    localStorage.setItem("erlebnisly-dark", String(dark));
+    return () => { document.body.classList.remove("dark"); };
+  }, [dark]);
 
   // Close notification panel on outside click
   useEffect(() => {
@@ -143,14 +150,22 @@ export default function DashboardClient({
     <div className="flex flex-col min-h-screen">
 
       {/* ── Topbar ─────────────────────────────────────────────── */}
-      <header className="dash-topbar sticky top-0 z-40 h-[60px] bg-white/90 backdrop-blur-[12px] border-b border-ds-outline-variant flex items-center justify-between px-8 flex-shrink-0">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="flex-shrink-0">
+      <header className="dash-topbar sticky top-0 z-40 h-[60px] bg-white/90 backdrop-blur-[12px] border-b border-ds-outline-variant flex items-center justify-between px-4 lg:px-8 flex-shrink-0 gap-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Hamburger — mobile only */}
+          <button
+            className="lg:hidden flex-shrink-0 p-1.5 rounded-ds text-ds-on-surface-variant hover:bg-ds-surface-container-low"
+            onClick={() => window.dispatchEvent(new CustomEvent("sidebar:open"))}
+          >
+            <span className="material-symbols-outlined" style={{fontSize:22}}>menu</span>
+          </button>
+
+          <div className="flex-shrink-0 hidden sm:block">
             <p className="text-[12px] text-ds-on-surface-variant">Good morning,</p>
             <p className="text-[15px] font-bold text-ds-on-surface leading-tight">{userName} 👋</p>
           </div>
-          {/* Search bar */}
-          <div className="dash-search relative flex-1 max-w-[340px]">
+          {/* Search bar — hidden on small mobile */}
+          <div className="dash-search relative flex-1 max-w-[340px] hidden sm:block">
             <span className="material-symbols-outlined absolute left-[11px] top-1/2 -translate-y-1/2 text-ds-outline pointer-events-none" style={{fontSize:16}}>search</span>
             <input
               type="text"
@@ -161,18 +176,21 @@ export default function DashboardClient({
                   router.push(`/experiences?q=${encodeURIComponent(searchQuery.trim())}`);
                 }
               }}
-              placeholder="Search activities, locations..."
+              placeholder="Search activities..."
               className="w-full bg-ds-surface-container-low border border-ds-outline-variant rounded-full py-[7px] pl-[36px] pr-[14px] text-[13px] text-ds-on-surface placeholder:text-ds-outline outline-none focus:border-ds-primary focus:shadow-[0_0_0_3px_rgba(255,77,0,0.12)] focus:bg-white transition-all font-[inherit]"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-[10px]">
-          {/* Dark mode toggle */}
-          <div className="dash-theme-toggle" onClick={() => setDark((d) => !d)} title={dark ? "Light mode" : "Dark mode"}>
-            <span className="material-symbols-outlined text-[#f59e0b]" style={{fontSize:14,fontVariationSettings:"'FILL' 1",zIndex:1}}>light_mode</span>
-            <span className="material-symbols-outlined text-[#818cf8]" style={{fontSize:14,fontVariationSettings:"'FILL' 1",zIndex:1}}>dark_mode</span>
-            <div className="dash-theme-dot" />
+        <div className="flex items-center gap-[8px] flex-shrink-0">
+          {/* Dark mode toggle — hidden on smallest screens */}
+          <div className="dash-theme-toggle hidden sm:block" onClick={() => setDark((d) => !d)} title={dark ? "Light mode" : "Dark mode"}>
+            <div className="dash-theme-dot">
+              {dark
+                ? <span className="material-symbols-outlined" style={{fontSize:15,color:"#818cf8",marginRight:0}}>dark_mode</span>
+                : <span className="material-symbols-outlined" style={{fontSize:15,color:"#f59e0b",fontVariationSettings:"'FILL' 1",marginLeft:0}}>light_mode</span>
+              }
+            </div>
           </div>
 
           {/* Bell */}
@@ -187,10 +205,10 @@ export default function DashboardClient({
           {/* Book CTA */}
           <Link
             href="/experiences"
-            className="flex items-center gap-1.5 bg-ds-primary text-ds-on-primary text-[13px] font-semibold px-4 py-2 rounded-ds-md border-none cursor-pointer hover:opacity-90 transition-opacity"
+            className="flex items-center gap-1.5 bg-ds-primary text-ds-on-primary text-[13px] font-semibold px-3 lg:px-4 py-2 rounded-ds-md border-none cursor-pointer hover:opacity-90 transition-opacity"
           >
             <span className="material-symbols-outlined" style={{fontSize:16}}>add_circle</span>
-            Book Experience
+            <span className="hidden sm:inline">Book Experience</span>
           </Link>
         </div>
       </header>
@@ -219,10 +237,10 @@ export default function DashboardClient({
       )}
 
       {/* ── Page content ───────────────────────────────────────── */}
-      <div className="flex-1 px-8 py-7 flex flex-col gap-7">
+      <div className="flex-1 px-4 py-5 lg:px-8 lg:py-7 flex flex-col gap-5 lg:gap-7">
 
         {/* ── 5-card stats row ─────────────────────────────────── */}
-        <div className="grid gap-4" style={{gridTemplateColumns:"repeat(5,1fr)"}}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
 
           {/* 1 — Completed trips */}
           <div className="dash-stat-card bg-white rounded-ds-lg border border-ds-outline-variant p-5 shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
@@ -305,70 +323,50 @@ export default function DashboardClient({
           </div>
 
           {nextBooking ? (
-            <div className="dash-nuc-image-card flex rounded-ds-xl border border-ds-outline-variant bg-white overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.08)]" style={{minHeight:200}}>
-              {/* Left: photo pane */}
-              <div className="relative flex-shrink-0 overflow-hidden bg-ds-surface-container" style={{width:"38%"}}>
-                <img
-                  src={heroImg(nextBooking.image, nextBooking.category)}
-                  alt={nextBooking.title}
-                  className="w-full h-full object-cover block"
-                />
+            <div className="dash-nuc-image-card flex flex-col lg:flex-row rounded-ds-xl border border-ds-outline-variant bg-white overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.08)]">
+              {/* Photo — full width on mobile, 38% on desktop */}
+              <div className="relative shrink-0 overflow-hidden bg-ds-surface-container h-48 lg:h-auto lg:w-[38%]">
+                <img src={heroImg(nextBooking.image, nextBooking.category)} alt={nextBooking.title} className="w-full h-full object-cover block" />
                 <div className="absolute top-3 left-3 bg-white/92 backdrop-blur-[8px] text-[#065f46] text-[10px] font-extrabold tracking-[0.08em] uppercase px-3 py-[4px] rounded-full">✓ Confirmed</div>
               </div>
 
-              {/* Middle: OpenStreetMap iframe as background + info overlay */}
-              <div className="flex-1 relative overflow-hidden" style={{minHeight:200}}>
-                <iframe
-                  title="Activity location"
-                  width="100%" height="100%"
-                  className="absolute inset-0 border-0 block pointer-events-none"
-                  style={{filter:"saturate(0.7) brightness(0.85)", minHeight:200}}
-                  loading="lazy"
+              {/* Map + info */}
+              <div className="flex-1 relative overflow-hidden min-h-[180px]">
+                <iframe title="Activity location" width="100%" height="100%" className="absolute inset-0 border-0 block pointer-events-none" style={{filter:"saturate(0.7) brightness(0.85)",minHeight:180}} loading="lazy"
                   src={nextBooking.lat && nextBooking.lon
-                    ? `https://www.openstreetmap.org/export/embed.html?bbox=${nextBooking.lon - 0.02},${nextBooking.lat - 0.015},${nextBooking.lon + 0.02},${nextBooking.lat + 0.015}&layer=mapnik&marker=${nextBooking.lat},${nextBooking.lon}`
-                    : `https://www.openstreetmap.org/export/embed.html?bbox=9.8,53.45,10.2,53.65&layer=mapnik`}
-                />
-                {/* Dark overlay */}
+                    ? `https://www.openstreetmap.org/export/embed.html?bbox=${nextBooking.lon-0.02},${nextBooking.lat-0.015},${nextBooking.lon+0.02},${nextBooking.lat+0.015}&layer=mapnik&marker=${nextBooking.lat},${nextBooking.lon}`
+                    : `https://www.openstreetmap.org/export/embed.html?bbox=9.8,53.45,10.2,53.65&layer=mapnik`} />
                 <div className="absolute inset-0 pointer-events-none" style={{background:"linear-gradient(135deg,rgba(15,23,42,0.72) 0%,rgba(15,23,42,0.55) 100%)"}} />
-                {/* Content */}
-                <div className="relative z-10 h-full flex flex-col justify-between p-6">
+                <div className="relative z-10 h-full flex flex-col justify-between p-5">
                   <div>
-                    <div className="flex items-center gap-1.5 mb-2.5">
-                      <span className="material-symbols-outlined text-ds-secondary-fixed" style={{fontSize:14,fontVariationSettings:"'FILL' 1"}}>calendar_month</span>
-                      <span className="text-[12px] font-bold tracking-[0.06em] uppercase text-ds-secondary-fixed">{nextBooking.dateLabel} · {nextBooking.timeLabel}</span>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <span className="material-symbols-outlined text-ds-secondary-fixed" style={{fontSize:13,fontVariationSettings:"'FILL' 1"}}>calendar_month</span>
+                      <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-ds-secondary-fixed">{nextBooking.dateLabel} · {nextBooking.timeLabel}</span>
                     </div>
-                    <div className="text-[20px] font-bold text-white tracking-[-0.01em] mb-1.5">{nextBooking.title}</div>
-                    <div className="flex items-center gap-1 text-[13px] text-white/70">
-                      <span className="material-symbols-outlined" style={{fontSize:14}}>location_on</span>
-                      {nextBooking.location} · {nextBooking.participants} participant{nextBooking.participants > 1 ? "s" : ""} · {eur(nextBooking.totalPriceCents)}
+                    <div className="text-[18px] font-bold text-white leading-tight mb-1.5">{nextBooking.title}</div>
+                    <div className="flex items-center gap-1 text-[12px] text-white/70 flex-wrap">
+                      <span className="material-symbols-outlined" style={{fontSize:13}}>location_on</span>
+                      {nextBooking.location} · {nextBooking.participants} pax · {eur(nextBooking.totalPriceCents)}
                     </div>
                   </div>
-                  <div className="flex gap-2.5 mt-5">
-                    <a
-                      href={nextBooking.lat && nextBooking.lon
-                      ? `https://www.google.com/maps?q=${nextBooking.lat},${nextBooking.lon}`
-                      : `https://www.google.com/maps/search/${encodeURIComponent(nextBooking.location)}`}
+                  <div className="flex gap-2 mt-4">
+                    <a href={nextBooking.lat && nextBooking.lon ? `https://www.google.com/maps?q=${nextBooking.lat},${nextBooking.lon}` : `https://www.google.com/maps/search/${encodeURIComponent(nextBooking.location)}`}
                       target="_blank" rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-ds-primary text-ds-on-primary text-[13px] font-semibold py-[9px] px-4 rounded-ds-md hover:opacity-90 transition-opacity"
-                    >
-                      <span className="material-symbols-outlined" style={{fontSize:15}}>map</span>
-                      Get Directions
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-ds-primary text-ds-on-primary text-[12px] font-semibold py-2 px-3 rounded-ds-md hover:opacity-90 transition-opacity">
+                      <span className="material-symbols-outlined" style={{fontSize:14}}>map</span>Get Directions
                     </a>
-                    <Link
-                      href={`/bookings/${nextBooking.id}/thank-you`}
-                      className="flex-1 flex items-center justify-center gap-1.5 text-white text-[13px] font-semibold py-[9px] px-4 rounded-ds-md border border-white/25 bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-colors"
-                    >
+                    <Link href={`/bookings/${nextBooking.id}/thank-you`} className="flex-1 flex items-center justify-center gap-1.5 text-white text-[12px] font-semibold py-2 px-3 rounded-ds-md border border-white/25 bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-colors">
                       View Details
                     </Link>
                   </div>
                 </div>
               </div>
 
-              {/* Right: countdown */}
-              <div className="flex flex-col items-center justify-center px-7 py-6 border-l border-ds-outline-variant flex-shrink-0">
-                <div className="text-[11px] font-bold tracking-[0.08em] uppercase text-ds-on-surface-variant mb-2">Days to go</div>
-                <div className="text-[48px] font-extrabold text-ds-on-surface tracking-[-0.04em] leading-none">{nextBooking.daysLeft}</div>
-                <div className="text-[11px] text-ds-on-surface-variant mt-1">days</div>
+              {/* Countdown — horizontal on mobile, vertical on desktop */}
+              <div className="flex lg:flex-col items-center justify-center gap-3 lg:gap-0 px-5 lg:px-7 py-4 lg:py-6 border-t lg:border-t-0 lg:border-l border-ds-outline-variant shrink-0">
+                <div className="text-[11px] font-bold tracking-[0.08em] uppercase text-ds-on-surface-variant lg:mb-2">Days to go</div>
+                <div className="text-[36px] lg:text-[48px] font-extrabold text-ds-on-surface tracking-[-0.04em] leading-none">{nextBooking.daysLeft}</div>
+                <div className="text-[11px] text-ds-on-surface-variant lg:mt-1">days</div>
               </div>
             </div>
           ) : (
@@ -390,7 +388,7 @@ export default function DashboardClient({
               <span className="text-[16px] font-bold text-ds-on-surface">Recommended for You</span>
               <Link href="/experiences" className="text-[13px] font-semibold text-ds-on-surface-variant hover:text-ds-on-surface transition-colors">View all →</Link>
             </div>
-            <div className="grid grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3.5">
               {recommendations.map((r) => (
                 <Link key={r.id} href={`/experiences/${r.id}`} className="dash-rec-card bg-white rounded-ds-lg border border-ds-outline-variant overflow-hidden shadow-[0_2px_8px_rgba(15,23,42,0.05)] hover:shadow-[0_8px_24px_rgba(15,23,42,0.1)] hover:-translate-y-0.5 transition-all cursor-pointer block">
                   <div className="dash-rec-img relative h-[130px] bg-ds-surface-container overflow-hidden flex items-center justify-center">
@@ -425,7 +423,7 @@ export default function DashboardClient({
         )}
 
         {/* ── Two-col: table + right panel ─────────────────────── */}
-        <div className="grid gap-5" style={{gridTemplateColumns:"1fr 340px"}}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5">
 
           {/* Recent Activity table */}
           <section>
@@ -445,8 +443,8 @@ export default function DashboardClient({
               <button className="text-[13px] font-semibold text-ds-on-surface-variant hover:text-ds-on-surface transition-colors cursor-pointer border-none bg-none">Export →</button>
             </div>
 
-            <div className="dash-card-white bg-white rounded-ds-lg border border-ds-outline-variant overflow-hidden shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
-              <table className="w-full border-collapse text-left">
+            <div className="dash-card-white bg-white rounded-ds-lg border border-ds-outline-variant overflow-hidden shadow-[0_2px_8px_rgba(15,23,42,0.05)] overflow-x-auto">
+              <table className="w-full border-collapse text-left min-w-[500px]">
                 <thead>
                   <tr>
                     {["Experience","Date","Status","Amount","Points"].map((h, i) => (

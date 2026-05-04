@@ -8,7 +8,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <ProvidersTanstack>
         <div className="min-h-screen bg-ds-background flex">
           <CustomerSidebar />
-          <div className="ml-60 flex-1 flex flex-col min-h-screen">
+          <div className="lg:ml-60 flex-1 flex flex-col min-h-screen">
             {children}
           </div>
         </div>

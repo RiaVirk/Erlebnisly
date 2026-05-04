@@ -19,22 +19,29 @@ export default async function ExperiencesPage({
 
   return (
     <>
-      <header className="sticky top-0 h-16 border-b border-ds-outline-variant bg-white/80 backdrop-blur-md flex justify-between items-center px-8 z-40">
-        <h1 className="type-title-sm text-ds-on-surface font-bold">Erlebnisse entdecken</h1>
+      <header className="sticky top-0 h-14 sm:h-16 border-b border-ds-outline-variant bg-white/80 backdrop-blur-md flex justify-between items-center px-4 sm:px-8 z-40 gap-3">
+        <h1 className="type-title-sm text-ds-on-surface font-bold truncate">Erlebnisse entdecken</h1>
         <SortSelect currentParams={sp} />
       </header>
 
-      <div className="max-w-360 mx-auto p-8">
-        <div className="flex gap-8">
-          <aside className="w-72 shrink-0 sticky top-20 self-start">
-            <FilterPanel currentParams={sp} categories={categories} />
+      <div className="max-w-360 mx-auto p-4 sm:p-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Filter panel — collapsible details on mobile, sticky aside on desktop */}
+          <aside className="lg:w-72 lg:shrink-0 lg:sticky lg:top-20 lg:self-start">
+            <details className="lg:block" open>
+              <summary className="lg:hidden cursor-pointer flex items-center justify-between p-4 bg-white border border-ds-outline-variant rounded-ds mb-2 type-body-sm font-semibold text-ds-on-surface">
+                <span className="flex items-center gap-2">
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>tune</span>
+                  Filters
+                </span>
+                <span className="material-symbols-outlined text-ds-on-surface-variant" style={{ fontSize: 18 }}>expand_more</span>
+              </summary>
+              <FilterPanel currentParams={sp} categories={categories} />
+            </details>
           </aside>
 
           <main className="flex-1 min-w-0">
-            <Suspense
-              key={JSON.stringify(sp)}
-              fallback={<ResultsSkeleton />}
-            >
+            <Suspense key={JSON.stringify(sp)} fallback={<ResultsSkeleton />}>
               <Results sp={sp} />
             </Suspense>
           </main>

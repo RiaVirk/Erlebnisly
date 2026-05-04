@@ -196,13 +196,12 @@ body.dark .user-row:hover     { background: #0d1c2d; }
   border: 1.5px solid #cbd5e1;
   position: relative;
   cursor: pointer;
-  display: flex; align-items: center;
-  padding: 0 4px;
-  justify-content: space-between;
   transition: background 0.3s, border-color 0.3s;
   flex-shrink: 0;
 }
 body.dark .dash-theme-toggle { background: #1e3a5f; border-color: #2d5a8e; }
+
+/* Sliding dot — acts as a flex container so its icon is always centered */
 .dash-theme-dot {
   position: absolute;
   width: 24px; height: 24px;
@@ -213,6 +212,9 @@ body.dark .dash-theme-toggle { background: #1e3a5f; border-color: #2d5a8e; }
   transform: translateX(0);
   top: 50%; margin-top: -12px;
   left: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 body.dark .dash-theme-dot { transform: translateX(32px); background: #ffb59e; }
 
