@@ -17,7 +17,7 @@ export default async function HomePage() {
     <main className="min-h-screen bg-ds-background flex flex-col">
       {/* Nav */}
       <nav className="h-16 border-b border-ds-outline-variant bg-white flex items-center justify-between px-8">
-        <img src="/logo.svg" alt="Erlebnisly" className="h-8 w-auto" />
+        <img src="/logo.png" alt="Erlebnisly" className="h-8 w-auto" />
         <div className="flex items-center gap-3">
           <Link href="/sign-in" className="type-body-sm text-ds-on-surface-variant hover:text-ds-on-surface transition-colors px-4 py-2">
             Sign in

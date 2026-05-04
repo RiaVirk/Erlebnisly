@@ -722,6 +722,92 @@ async function main() {
   }
 
   console.log("✅ 100 demo bookings with reviews");
+
+  // ── Seed demo data for every real (non-demo) customer in the DB ───
+  // This ensures any developer / tester account sees populated KPI cards.
+  const realCustomers = await prisma.user.findMany({
+    where: {
+      role: "CUSTOMER",
+      clerkId: { notIn: ["demo_host", "demo_customer"] },
+    },
+  });
+
+  for (const realUser of realCustomers) {
+    // Skip if they already have bookings — don't overwrite real activity
+    const existing = await prisma.booking.count({ where: { userId: realUser.id } });
+    if (existing > 0) continue;
+
+    console.log(`🌱 Seeding demo data for real user ${realUser.email ?? realUser.id}…`);
+
+    // Pick 6 varied experiences spread across categories
+    const picks = allExperiences.slice(0, 6);
+    let bookingIdx = 0;
+
+    for (const exp of picks) {
+      // Past completed bookings (for KPI: completed count, spend, favourite category)
+      const slotStart = subDays(new Date(), 10 + bookingIdx * 14);
+      const slotEnd = new Date(slotStart.getTime() + exp.durationMinutes * 60_000);
+      const pastSlot = await prisma.timeSlot.create({
+        data: { experienceId: exp.id, startTime: slotStart, endTime: slotEnd },
+      });
+      const participants = 1 + (bookingIdx % 2);
+      const total = exp.basePriceCents * participants;
+      const fee = Math.round(total * 0.15);
+      const completedBooking = await prisma.booking.create({
+        data: {
+          userId: realUser.id, timeSlotId: pastSlot.id, status: "COMPLETED",
+          participantCount: participants, currency: "EUR",
+          subtotalCents: total, totalPriceCents: total,
+          platformFeeCents: fee, hostPayoutCents: total - fee,
+          molliePaymentId: `tr_real_${realUser.id}_${Date.now()}_${bookingIdx}`,
+          molliePaymentStatus: "paid",
+          createdAt: slotStart,
+        },
+      });
+      await prisma.review.create({
+        data: {
+          bookingId: completedBooking.id, userId: realUser.id, experienceId: exp.id,
+          rating: 4 + (bookingIdx % 2),
+          comment: REVIEW_COMMENTS[bookingIdx % REVIEW_COMMENTS.length],
+        },
+      });
+      bookingIdx++;
+    }
+
+    // 2 upcoming confirmed bookings (for KPI: upcoming count + "Next Up" card)
+    const upcomingExps = allExperiences.slice(6, 8);
+    for (let u = 0; u < upcomingExps.length; u++) {
+      const exp = upcomingExps[u];
+      if (!exp) continue;
+      const futureStart = setHours(addDays(new Date(), 10 + u * 7), 10);
+      const futureEnd = new Date(futureStart.getTime() + exp.durationMinutes * 60_000);
+      const futureSlot = await prisma.timeSlot.upsert({
+        where: { experienceId_startTime: { experienceId: exp.id, startTime: futureStart } },
+        update: {},
+        create: { experienceId: exp.id, startTime: futureStart, endTime: futureEnd },
+      });
+      const participants = 2;
+      const total = exp.basePriceCents * participants;
+      const fee = Math.round(total * 0.15);
+      await prisma.booking.create({
+        data: {
+          userId: realUser.id, timeSlotId: futureSlot.id, status: "CONFIRMED",
+          participantCount: participants, currency: "EUR",
+          subtotalCents: total, totalPriceCents: total,
+          platformFeeCents: fee, hostPayoutCents: total - fee,
+          molliePaymentId: `tr_real_upcoming_${realUser.id}_${Date.now()}_${u}`,
+          molliePaymentStatus: "paid",
+        },
+      });
+    }
+
+    console.log(`  ✅ 6 completed + 2 upcoming bookings for ${realUser.name ?? realUser.email}`);
+  }
+
+  if (realCustomers.length === 0) {
+    console.log("ℹ️  No real customer accounts found — sign up first, then re-run the seed.");
+  }
+
   console.log("Seed complete.");
 }
 

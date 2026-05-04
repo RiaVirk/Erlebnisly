@@ -44,7 +44,7 @@ export function BaseLayout({ preview, children }: BaseLayoutProps) {
           <Container className="mx-auto my-10 max-w-[600px] rounded-lg bg-white px-8 py-10 shadow-sm">
             <Section className="mb-8">
               <Img
-                src={`${APP_URL}/logo.svg`}
+                src={`${APP_URL}/logo.png`}
                 alt="Erlebnisly"
                 width={75}
                 height={56}

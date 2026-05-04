@@ -56,7 +56,7 @@ export default function OnboardingClient() {
         {/* Header */}
         <header className="text-center mb-16 onboarding-fade-in">
           <div className="mb-4 inline-flex items-center justify-center">
-            <img src="/logo.svg" alt="Erlebnisly" className="h-24 w-auto" />
+            <img src="/logo.png" alt="Erlebnisly" className="h-24 w-auto" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Welcome to Erlebnisly</h1>
           <p className="text-slate-400 text-lg max-w-md mx-auto font-light">

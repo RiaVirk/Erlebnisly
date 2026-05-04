@@ -27,7 +27,7 @@ export default function HostSidebar() {
     <aside className="fixed left-0 top-0 h-full w-60 border-r bg-white border-ds-outline-variant flex flex-col py-6 z-50">
       {/* Brand */}
       <div className="px-6 mb-8 flex items-center gap-3">
-        <img src="/logo.svg" alt="Erlebnisly" className="h-9 w-auto shrink-0" />
+        <img src="/logo.png" alt="Erlebnisly" className="h-9 w-auto shrink-0" />
         <div>
           <h1 className="text-sm font-bold text-ds-on-surface leading-tight">Erlebnisly</h1>
           <p className="type-body-sm text-ds-on-surface-variant">Host Portal</p>
