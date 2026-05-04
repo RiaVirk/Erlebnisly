@@ -108,10 +108,7 @@ export default function DashboardClient({
   nextBooking, recentBookings, wishlist, recommendations,
 }: Props) {
   const router = useRouter();
-  const [dark, setDark]             = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("erlebnisly-dark") === "true";
-  });
+  const [dark, setDark]             = useState(false);
   const [notifOpen, setNotifOpen]   = useState(false);
   const [notifs, setNotifs]         = useState(MOCK_NOTIFS);
   const [tab, setTab]               = useState<"all" | "upcoming" | "completed">("all");
@@ -119,7 +116,12 @@ export default function DashboardClient({
   const [searchQuery, setSearchQuery] = useState("");
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // Dark mode: sync body class + persist preference
+  // Restore persisted dark preference after hydration (must not run on server)
+  useEffect(() => {
+    if (localStorage.getItem("erlebnisly-dark") === "true") setDark(true);
+  }, []);
+
+  // Sync body class + persist whenever dark changes
   useEffect(() => {
     document.body.classList.toggle("dark", dark);
     localStorage.setItem("erlebnisly-dark", String(dark));
@@ -183,13 +185,25 @@ export default function DashboardClient({
         </div>
 
         <div className="flex items-center gap-[8px] flex-shrink-0">
-          {/* Dark mode toggle — hidden on smallest screens */}
-          <div className="dash-theme-toggle hidden sm:block" onClick={() => setDark((d) => !d)} title={dark ? "Light mode" : "Dark mode"}>
-            <div className="dash-theme-dot">
-              {dark
-                ? <span className="material-symbols-outlined" style={{fontSize:15,color:"#818cf8",marginRight:0}}>dark_mode</span>
-                : <span className="material-symbols-outlined" style={{fontSize:15,color:"#f59e0b",fontVariationSettings:"'FILL' 1",marginLeft:0}}>light_mode</span>
-              }
+          {/* Dark mode toggle — suppressHydrationWarning because localStorage state
+              intentionally differs between server (always false) and client. */}
+          <div
+            className="dash-theme-toggle hidden sm:block"
+            onClick={() => setDark((d) => !d)}
+            title={dark ? "Light mode" : "Dark mode"}
+            suppressHydrationWarning
+          >
+            <div className="dash-theme-dot" suppressHydrationWarning>
+              <span
+                className="material-symbols-outlined"
+                suppressHydrationWarning
+                style={dark
+                  ? {fontSize:15, color:"#818cf8"}
+                  : {fontSize:15, color:"#f59e0b", fontVariationSettings:"'FILL' 1"}
+                }
+              >
+                {dark ? "dark_mode" : "light_mode"}
+              </span>
             </div>
           </div>
 

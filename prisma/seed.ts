@@ -265,7 +265,7 @@ const SAMPLE_EXPERIENCES = [
     cat: "arts-culture", price: 5000, max: 6, duration: 150, difficulty: "EASY" as const,
     location: "Berlin Mitte",
     images: [
-      "https://images.unsplash.com/photo-1502920917128-1aa500764b8?w=800&h=600&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&h=600&fit=crop&auto=format&q=80",
       "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&h=600&fit=crop&auto=format&q=80",
     ],
   },
@@ -446,7 +446,7 @@ const SAMPLE_EXPERIENCES = [
     location: "Berlin Charlottenburg",
     images: [
       "https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&h=600&fit=crop&auto=format&q=80",
-      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&h=600&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1536623975707-c4b3b2af565d?w=800&h=600&fit=crop&auto=format&q=80",
     ],
   },
   {
@@ -456,7 +456,7 @@ const SAMPLE_EXPERIENCES = [
     cat: "wellness", price: 3500, max: 6, duration: 60, difficulty: "MEDIUM" as const,
     location: "Berlin Mitte",
     images: [
-      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=600&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=600&fit=crop&auto=format&q=80",
       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop&auto=format&q=80",
     ],
   },
@@ -468,7 +468,7 @@ const SAMPLE_EXPERIENCES = [
     location: "Berlin Mitte",
     images: [
       "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=800&h=600&fit=crop&auto=format&q=80",
-      "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&h=600&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1593895791195-2396ee58f10e?w=800&h=600&fit=crop&auto=format&q=80",
     ],
   },
 
