@@ -12,7 +12,7 @@ export async function getSimilarExperiences(experienceId: string, limit = 4) {
   const lo = Math.round(target.basePriceCents * 0.75);
   const hi = Math.round(target.basePriceCents * 1.25);
 
-  return prisma.experience.findMany({
+  const similar = await prisma.experience.findMany({
     where: {
       id: { not: experienceId },
       isPublished: true,
@@ -29,7 +29,17 @@ export async function getSimilarExperiences(experienceId: string, limit = 4) {
     include: {
       category: true,
       _count: { select: { reviews: true } },
-      reviews: { select: { rating: true } },
     },
   });
+
+  if (similar.length === 0) return [];
+
+  const ratingAggs = await prisma.review.groupBy({
+    by: ["experienceId"],
+    where: { experienceId: { in: similar.map((e) => e.id) } },
+    _avg: { rating: true },
+  });
+  const avgRatingMap = new Map(ratingAggs.map((r) => [r.experienceId, r._avg.rating]));
+
+  return similar.map((e) => ({ ...e, avgRating: avgRatingMap.get(e.id) ?? null }));
 }

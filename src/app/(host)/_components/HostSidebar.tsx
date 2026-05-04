@@ -26,9 +26,12 @@ export default function HostSidebar() {
   return (
     <aside className="fixed left-0 top-0 h-full w-60 border-r bg-white border-ds-outline-variant flex flex-col py-6 z-50">
       {/* Brand */}
-      <div className="px-6 mb-8">
-        <h1 className="text-xl font-bold text-ds-on-surface">Erlebnisly</h1>
-        <p className="type-body-sm text-ds-on-surface-variant mt-0.5">Host Portal</p>
+      <div className="px-6 mb-8 flex items-center gap-3">
+        <img src="/logo.svg" alt="Erlebnisly" className="h-9 w-auto shrink-0" />
+        <div>
+          <h1 className="text-sm font-bold text-ds-on-surface leading-tight">Erlebnisly</h1>
+          <p className="type-body-sm text-ds-on-surface-variant">Host Portal</p>
+        </div>
       </div>
 
       {/* Main nav */}
@@ -57,7 +60,7 @@ export default function HostSidebar() {
         {/* New Experience CTA */}
         <Link
           href="/host/experiences/new"
-          className="flex items-center justify-center gap-2 w-full mb-4 py-2.5 px-4 bg-ds-secondary text-ds-on-secondary type-body-sm font-semibold rounded-ds shadow-sm hover:opacity-90 transition-opacity"
+          className="flex items-center justify-center gap-2 w-full mb-4 py-2.5 px-4 bg-ds-primary text-ds-on-primary type-body-sm font-semibold rounded-ds shadow-sm hover:opacity-90 transition-opacity"
         >
           <span className="material-symbols-outlined text-title-sm">add</span>
           New Experience

@@ -15,9 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <nav className="sticky top-0 z-50 h-16 border-b border-white/10 bg-[#0F172A] flex items-center justify-between px-8">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-ds-secondary rounded-[4px] flex items-center justify-center">
-              <span className="material-symbols-outlined text-white" style={{ fontSize: 14 }}>shield</span>
-            </div>
+            <img src="/logo.svg" alt="Erlebnisly" className="h-8 w-auto" />
             <span className="type-body-sm font-bold text-white tracking-wide">Admin</span>
           </div>
           <div className="flex items-center gap-1">

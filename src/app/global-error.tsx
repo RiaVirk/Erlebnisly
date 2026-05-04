@@ -13,20 +13,20 @@ export default function GlobalError({
 }) {
   return (
     <html lang="de">
-      <body style={{ fontFamily: "Inter, sans-serif", padding: "2rem", textAlign: "center" }}>
-        <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1rem" }}>
+      <body style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", padding: "2rem", textAlign: "center" }}>
+        <h2 style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif", fontSize: "1.5rem", fontWeight: 700, marginBottom: "1rem" }}>
           Something went wrong
         </h2>
         {error.digest && (
-          <p style={{ fontSize: "0.875rem", color: "#64748b", marginBottom: "1rem" }}>
+          <p style={{ fontSize: "0.875rem", color: "#5c4037", marginBottom: "1rem" }}>
             Error ID: {error.digest}
           </p>
         )}
         <button
           onClick={reset}
           style={{
-            background: "#10B981", color: "white", border: "none",
-            padding: "0.5rem 1.25rem", borderRadius: "4px",
+            background: "#FF4D00", color: "white", border: "none",
+            padding: "0.5rem 1.25rem", borderRadius: "8px",
             fontWeight: 600, cursor: "pointer",
           }}
         >

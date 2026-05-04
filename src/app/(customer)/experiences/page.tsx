@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { resolveSearchParams, type RawSearchParams } from "@/lib/actions/search";
-import { ExperienceCard, type ExperienceCardData } from "@/components/customer/search/ExperienceCard";
+import { ExperienceCard } from "@/components/customer/search/ExperienceCard";
 import { FilterPanel } from "@/components/customer/search/FilterPanel";
 import { SortSelect } from "@/components/customer/search/SortSelect";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -93,7 +93,6 @@ async function Results({ sp }: { sp: RawSearchParams }) {
       include: {
         category: true,
         _count: { select: { reviews: true } },
-        reviews: { select: { rating: true } },
       },
       orderBy: filter.orderBy,
       skip: (page - 1) * PAGE_SIZE,
@@ -101,6 +100,17 @@ async function Results({ sp }: { sp: RawSearchParams }) {
     }),
     prisma.experience.count({ where }),
   ]);
+
+  // Compute average ratings in one aggregate query instead of loading all review rows
+  const experienceIds = experiences.map((e) => e.id);
+  const ratingAggs = experienceIds.length > 0
+    ? await prisma.review.groupBy({
+        by: ["experienceId"],
+        where: { experienceId: { in: experienceIds } },
+        _avg: { rating: true },
+      })
+    : [];
+  const avgRatingMap = new Map(ratingAggs.map((r) => [r.experienceId, r._avg.rating]));
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -112,7 +122,7 @@ async function Results({ sp }: { sp: RawSearchParams }) {
         <p className="type-body-sm mt-1">Versuche andere Filter oder Suchbegriffe.</p>
         <Link
           href="/experiences"
-          className="mt-6 px-5 py-2 bg-ds-secondary text-ds-on-secondary rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity"
+          className="mt-6 px-5 py-2 bg-ds-primary text-ds-on-primary rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity"
         >
           Filter zurücksetzen
         </Link>
@@ -137,10 +147,10 @@ async function Results({ sp }: { sp: RawSearchParams }) {
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {(experiences as ExperienceCardData[]).map((exp) => (
+        {experiences.map((exp) => (
           <ExperienceCard
             key={exp.id}
-            experience={exp}
+            experience={{ ...exp, avgRating: avgRatingMap.get(exp.id) ?? null }}
             initialIsInWishlist={wishlistSet.has(exp.id)}
           />
         ))}
@@ -162,7 +172,7 @@ async function Results({ sp }: { sp: RawSearchParams }) {
               href={pageHref(p)}
               className={`w-10 h-10 flex items-center justify-center rounded-ds type-data-tabular transition-colors ${
                 p === page
-                  ? "bg-ds-secondary text-ds-on-secondary font-bold"
+                  ? "bg-ds-primary text-ds-on-primary font-bold"
                   : "border border-ds-outline-variant text-ds-on-surface hover:bg-ds-surface-container-low"
               }`}
             >

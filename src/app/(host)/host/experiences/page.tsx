@@ -23,7 +23,7 @@ export default async function HostExperiencesPage() {
           <p className="type-label-caps text-ds-on-surface-variant">HOST PORTAL</p>
           <h1 className="type-title-sm text-ds-on-surface">My Experiences</h1>
         </div>
-        <Link href="/host/experiences/new" className="flex items-center gap-2 bg-ds-secondary text-ds-on-secondary px-4 py-2 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity">
+        <Link href="/host/experiences/new" className="flex items-center gap-2 bg-ds-primary text-ds-on-primary px-4 py-2 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity">
           <span className="material-symbols-outlined text-title-sm">add</span>New Experience
         </Link>
       </header>
@@ -34,7 +34,7 @@ export default async function HostExperiencesPage() {
             <span className="material-symbols-outlined text-5xl text-ds-outline mb-4 block">travel_explore</span>
             <p className="type-title-sm text-ds-on-surface mb-2">No experiences yet</p>
             <p className="type-body-sm text-ds-on-surface-variant mb-6">Create your first experience to start accepting bookings.</p>
-            <Link href="/host/experiences/new" className="inline-flex items-center gap-2 bg-ds-secondary text-ds-on-secondary px-5 py-2.5 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity">
+            <Link href="/host/experiences/new" className="inline-flex items-center gap-2 bg-ds-primary text-ds-on-primary px-5 py-2.5 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity">
               <span className="material-symbols-outlined text-title-sm">add</span>Create your first experience
             </Link>
           </div>

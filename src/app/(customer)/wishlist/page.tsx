@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { ExperienceCard, type ExperienceCardData } from "@/components/customer/search/ExperienceCard";
+import { ExperienceCard } from "@/components/customer/search/ExperienceCard";
 import Link from "next/link";
 
 export const metadata = { title: "Merkliste | Erlebnisly" };
@@ -20,7 +20,6 @@ export default async function WishlistPage() {
         include: {
           category: true,
           _count: { select: { reviews: true } },
-          reviews: { select: { rating: true } },
         },
       },
     },
@@ -30,6 +29,16 @@ export default async function WishlistPage() {
   const experiences = items
     .map((i) => i.experience)
     .filter((e) => e.isPublished && !e.deletedAt);
+
+  const expIds = experiences.map((e) => e.id);
+  const ratingAggs = expIds.length > 0
+    ? await prisma.review.groupBy({
+        by: ["experienceId"],
+        where: { experienceId: { in: expIds } },
+        _avg: { rating: true },
+      })
+    : [];
+  const avgRatingMap = new Map(ratingAggs.map((r) => [r.experienceId, r._avg.rating]));
 
   return (
     <main className="max-w-360 mx-auto p-8">
@@ -52,15 +61,19 @@ export default async function WishlistPage() {
           </p>
           <Link
             href="/experiences"
-            className="mt-6 px-5 py-2 bg-ds-secondary text-ds-on-secondary rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity"
+            className="mt-6 px-5 py-2 bg-ds-primary text-ds-on-primary rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity"
           >
             Erlebnisse entdecken
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {(experiences as ExperienceCardData[]).map((exp) => (
-            <ExperienceCard key={exp.id} experience={exp} initialIsInWishlist={true} />
+          {experiences.map((exp) => (
+            <ExperienceCard
+              key={exp.id}
+              experience={{ ...exp, avgRating: avgRatingMap.get(exp.id) ?? null }}
+              initialIsInWishlist={true}
+            />
           ))}
         </div>
       )}

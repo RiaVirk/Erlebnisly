@@ -17,12 +17,12 @@ export default async function HomePage() {
     <main className="min-h-screen bg-ds-background flex flex-col">
       {/* Nav */}
       <nav className="h-16 border-b border-ds-outline-variant bg-white flex items-center justify-between px-8">
-        <span className="text-xl font-bold text-ds-on-surface">Erlebnisly</span>
+        <img src="/logo.svg" alt="Erlebnisly" className="h-8 w-auto" />
         <div className="flex items-center gap-3">
           <Link href="/sign-in" className="type-body-sm text-ds-on-surface-variant hover:text-ds-on-surface transition-colors px-4 py-2">
             Sign in
           </Link>
-          <Link href="/sign-up" className="type-body-sm font-semibold bg-ds-secondary text-ds-on-secondary px-4 py-2 rounded-ds hover:opacity-90 transition-opacity">
+          <Link href="/sign-up" className="type-body-sm font-semibold bg-ds-primary text-ds-on-primary px-4 py-2 rounded-ds hover:opacity-90 transition-opacity">
             Get started
           </Link>
         </div>
@@ -42,7 +42,7 @@ export default async function HomePage() {
             Browse and book professional tours, workshops, and adventures. Hosts get powerful tools to manage bookings and time slots.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Link href="/sign-up" className="flex items-center gap-2 bg-ds-secondary text-ds-on-secondary px-6 py-3 rounded-ds type-body-md font-semibold hover:opacity-90 transition-opacity shadow-[0_4px_20px_rgba(15,23,42,0.08)]">
+            <Link href="/sign-up" className="flex items-center gap-2 bg-ds-primary text-ds-on-primary px-6 py-3 rounded-ds type-body-md font-semibold hover:opacity-90 transition-opacity shadow-[0_4px_20px_rgba(255,77,0,0.15)]">
               <span className="material-symbols-outlined text-title-sm">rocket_launch</span>
               Get started free
             </Link>

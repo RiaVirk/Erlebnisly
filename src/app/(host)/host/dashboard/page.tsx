@@ -30,7 +30,7 @@ export default async function HostDashboardPage() {
         </div>
         <Link
           href="/host/experiences/new"
-          className="flex items-center gap-2 bg-ds-secondary text-ds-on-secondary px-4 py-2 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 bg-ds-primary text-ds-on-primary px-4 py-2 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity"
         >
           <span className="material-symbols-outlined text-title-sm">add</span>
           New Experience

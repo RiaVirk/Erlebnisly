@@ -37,7 +37,7 @@ export default async function CustomerBookingsPage() {
           <p className="type-label-caps text-ds-on-surface-variant">MY ACCOUNT</p>
           <h1 className="type-title-sm text-ds-on-surface">My Bookings</h1>
         </div>
-        <Link href="/experiences" className="flex items-center gap-2 bg-ds-secondary text-ds-on-secondary px-4 py-2 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity">
+        <Link href="/experiences" className="flex items-center gap-2 bg-ds-primary text-ds-on-primary px-4 py-2 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity">
           <span className="material-symbols-outlined text-title-sm">search</span>Browse More
         </Link>
       </header>
@@ -48,7 +48,7 @@ export default async function CustomerBookingsPage() {
             <span className="material-symbols-outlined text-5xl text-ds-outline mb-4 block">confirmation_number</span>
             <p className="type-title-sm text-ds-on-surface mb-2">No bookings yet</p>
             <p className="type-body-sm text-ds-on-surface-variant mb-6">Browse experiences and book your first adventure.</p>
-            <Link href="/experiences" className="inline-flex items-center gap-2 bg-ds-secondary text-ds-on-secondary px-5 py-2.5 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity">
+            <Link href="/experiences" className="inline-flex items-center gap-2 bg-ds-primary text-ds-on-primary px-5 py-2.5 rounded-ds type-body-sm font-semibold hover:opacity-90 transition-opacity">
               <span className="material-symbols-outlined text-title-sm">search</span>Browse experiences
             </Link>
           </div>

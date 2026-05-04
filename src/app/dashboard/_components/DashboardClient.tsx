@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 /* ── Types ──────────────────────────────────────────────────────── */
@@ -106,11 +107,13 @@ export default function DashboardClient({
   favouriteCategory, favouriteCategoryCount, loyaltyPoints,
   nextBooking, recentBookings, wishlist, recommendations,
 }: Props) {
+  const router = useRouter();
   const [dark, setDark]             = useState(false);
   const [notifOpen, setNotifOpen]   = useState(false);
   const [notifs, setNotifs]         = useState(MOCK_NOTIFS);
   const [tab, setTab]               = useState<"all" | "upcoming" | "completed">("all");
   const [wishlistItems, setWishlistItems] = useState(wishlist);
+  const [searchQuery, setSearchQuery] = useState("");
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Dark mode: toggle body class
@@ -151,8 +154,15 @@ export default function DashboardClient({
             <span className="material-symbols-outlined absolute left-[11px] top-1/2 -translate-y-1/2 text-ds-outline pointer-events-none" style={{fontSize:16}}>search</span>
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim()) {
+                  router.push(`/experiences?q=${encodeURIComponent(searchQuery.trim())}`);
+                }
+              }}
               placeholder="Search activities, locations..."
-              className="w-full bg-ds-surface-container-low border border-ds-outline-variant rounded-full py-[7px] pl-[36px] pr-[14px] text-[13px] text-ds-on-surface placeholder:text-ds-outline outline-none focus:border-ds-secondary focus:shadow-[0_0_0_3px_rgba(16,185,129,0.12)] focus:bg-white transition-all font-[inherit]"
+              className="w-full bg-ds-surface-container-low border border-ds-outline-variant rounded-full py-[7px] pl-[36px] pr-[14px] text-[13px] text-ds-on-surface placeholder:text-ds-outline outline-none focus:border-ds-primary focus:shadow-[0_0_0_3px_rgba(255,77,0,0.12)] focus:bg-white transition-all font-[inherit]"
             />
           </div>
         </div>
@@ -177,7 +187,7 @@ export default function DashboardClient({
           {/* Book CTA */}
           <Link
             href="/experiences"
-            className="flex items-center gap-1.5 bg-ds-secondary text-white text-[13px] font-semibold px-4 py-2 rounded-ds-md border-none cursor-pointer hover:opacity-90 transition-opacity"
+            className="flex items-center gap-1.5 bg-ds-primary text-ds-on-primary text-[13px] font-semibold px-4 py-2 rounded-ds-md border-none cursor-pointer hover:opacity-90 transition-opacity"
           >
             <span className="material-symbols-outlined" style={{fontSize:16}}>add_circle</span>
             Book Experience
@@ -195,7 +205,7 @@ export default function DashboardClient({
           {notifs.map((n) => (
             <div
               key={n.id}
-              className={`dash-notif-item flex items-start gap-[10px] px-4 py-3 border-b border-ds-outline-variant last:border-b-0 cursor-pointer hover:bg-ds-surface-container-low transition-colors ${!n.read ? "dash-notif-unread bg-[#f0fdf7]" : ""}`}
+              className={`dash-notif-item flex items-start gap-[10px] px-4 py-3 border-b border-ds-outline-variant last:border-b-0 cursor-pointer hover:bg-ds-surface-container-low transition-colors ${!n.read ? "dash-notif-unread bg-[#fff4f0]" : ""}`}
               onClick={() => setNotifs((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)))}
             >
               <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[5px] ${n.read ? "opacity-0" : "bg-ds-secondary"}`} />
@@ -339,7 +349,7 @@ export default function DashboardClient({
                       ? `https://www.google.com/maps?q=${nextBooking.lat},${nextBooking.lon}`
                       : `https://www.google.com/maps/search/${encodeURIComponent(nextBooking.location)}`}
                       target="_blank" rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-ds-secondary text-white text-[13px] font-semibold py-[9px] px-4 rounded-ds-md hover:opacity-90 transition-opacity"
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-ds-primary text-ds-on-primary text-[13px] font-semibold py-[9px] px-4 rounded-ds-md hover:opacity-90 transition-opacity"
                     >
                       <span className="material-symbols-outlined" style={{fontSize:15}}>map</span>
                       Get Directions
@@ -366,7 +376,7 @@ export default function DashboardClient({
               <span className="material-symbols-outlined text-ds-outline text-5xl block mb-3">event_busy</span>
               <p className="text-[16px] font-semibold text-ds-on-surface mb-1">No upcoming bookings</p>
               <p className="text-[14px] text-ds-on-surface-variant mb-5">Find your next adventure below</p>
-              <Link href="/experiences" className="inline-flex items-center gap-1.5 bg-ds-secondary text-white text-[13px] font-semibold px-5 py-2 rounded-ds-md hover:opacity-90 transition-opacity">
+              <Link href="/experiences" className="inline-flex items-center gap-1.5 bg-ds-primary text-ds-on-primary text-[13px] font-semibold px-5 py-2 rounded-ds-md hover:opacity-90 transition-opacity">
                 <span className="material-symbols-outlined" style={{fontSize:16}}>search</span>Browse Experiences
               </Link>
             </div>
