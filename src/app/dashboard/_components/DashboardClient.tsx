@@ -304,13 +304,26 @@ export default function DashboardClient({
           </div>
 
           {/* 5 — Pro member card */}
-          <div className="rounded-ds-lg p-5 relative overflow-hidden shadow-[0_2px_8px_rgba(15,23,42,0.12)]" style={{background:"var(--color-ds-primary-container)"}}>
-            <span className="material-symbols-outlined absolute -right-3 -bottom-3 text-white/[0.07] pointer-events-none" style={{fontSize:72,fontVariationSettings:"'FILL' 1",lineHeight:1}}>workspace_premium</span>
-            <div className="text-[11px] font-bold tracking-[0.06em] uppercase text-white/55 mb-1.5">Status</div>
-            <div className="text-[17px] font-extrabold text-white mb-1">Pro Member</div>
-            <div className="text-[12px] text-white/60 leading-snug">Top 5% of active users</div>
-            <div className="mt-3.5">
-              <span className="text-[11px] font-bold text-ds-secondary-fixed bg-[rgba(16,185,129,0.15)] border border-[rgba(52,211,153,0.3)] px-[10px] py-[3px] rounded-full">Gold Tier</span>
+          <div
+            className="rounded-ds-lg p-5 relative overflow-hidden shadow-[0_6px_24px_rgba(255,77,0,0.40)]"
+            style={{background:"linear-gradient(135deg,#FF4D00 0%,#b83200 100%)"}}
+          >
+            {/* Shimmer overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none" />
+            {/* Large decorative icon */}
+            <span className="material-symbols-outlined absolute -right-2 -bottom-2 text-white/10 pointer-events-none select-none" style={{fontSize:88,fontVariationSettings:"'FILL' 1",lineHeight:1}}>workspace_premium</span>
+
+            <div className="text-[11px] font-bold tracking-[0.08em] uppercase text-white/70 mb-1.5">Status</div>
+            <div className="text-[18px] font-extrabold text-white mb-1 tracking-tight drop-shadow-sm">Pro Member</div>
+            <div className="text-[12px] text-white/80 leading-snug">Top 5% of active users</div>
+            <div className="mt-4">
+              <span
+                className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
+                style={{background:"rgba(255,210,0,0.2)",border:"1px solid rgba(255,210,0,0.55)",color:"#FFD700"}}
+              >
+                <span className="material-symbols-outlined" style={{fontSize:11,fontVariationSettings:"'FILL' 1"}}>star</span>
+                Gold Tier
+              </span>
             </div>
           </div>
         </div>
