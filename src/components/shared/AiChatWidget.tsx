@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useTransition } from "react";
+import Image from "next/image";
 import { sendAiMessage, type ChatMessage } from "@/lib/actions/ai";
 
 interface Props {
@@ -8,6 +9,27 @@ interface Props {
   context?: string;
   /** Label shown on the open button tooltip */
   label?: string;
+}
+
+function BotAvatar({ size }: { size: number }) {
+  const [err, setErr] = useState(false);
+  if (err) {
+    return (
+      <span className="material-symbols-outlined text-white" style={{ fontSize: size * 0.55, fontVariationSettings: "'FILL' 1" }}>
+        smart_toy
+      </span>
+    );
+  }
+  return (
+    <Image
+      src="/erli-bot.png"
+      alt="Erli AI"
+      width={size}
+      height={size}
+      className="object-cover w-full h-full"
+      onError={() => setErr(true)}
+    />
+  );
 }
 
 export function AiChatWidget({ context, label = "AI Assistant" }: Props) {
@@ -44,17 +66,16 @@ export function AiChatWidget({ context, label = "AI Assistant" }: Props) {
     <>
       {/* Floating button */}
       <button
-        className="fixed right-6 bottom-6 z-[200] w-[52px] h-[52px] rounded-full flex items-center justify-center text-ds-on-primary shadow-[0_4px_20px_rgba(255,77,0,0.35)] hover:scale-110 hover:shadow-[0_8px_32px_rgba(255,77,0,0.45)] transition-all bg-ds-primary"
+        className="fixed right-6 bottom-6 z-[200] w-[56px] h-[56px] rounded-full flex items-center justify-center shadow-[0_4px_24px_rgba(80,40,180,0.45)] hover:scale-110 hover:shadow-[0_8px_36px_rgba(80,40,180,0.6)] transition-all overflow-hidden bg-[#0d1340]"
         title={label}
         onClick={() => setOpen((o) => !o)}
         aria-label={label}
       >
-        <span
-          className="material-symbols-outlined"
-          style={{ fontSize: 24, fontVariationSettings: "'FILL' 1" }}
-        >
-          {open ? "close" : "smart_toy"}
-        </span>
+        {open ? (
+          <span className="material-symbols-outlined text-white" style={{ fontSize: 26 }}>close</span>
+        ) : (
+          <BotAvatar size={56} />
+        )}
       </button>
 
       {/* Chat panel */}
@@ -63,8 +84,10 @@ export function AiChatWidget({ context, label = "AI Assistant" }: Props) {
           style={{ maxHeight: "min(520px, calc(100vh - 100px))" }}>
 
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-ds-outline-variant bg-ds-primary">
-            <span className="material-symbols-outlined text-white" style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-ds-outline-variant bg-[#0d1340]">
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-[#0d1340] flex items-center justify-center">
+              <BotAvatar size={32} />
+            </div>
             <div>
               <p className="type-body-sm font-bold text-white leading-tight">Erli — AI Assistant</p>
               <p className="text-[11px] text-white/70">Powered by Gemini 2.5 Flash</p>
@@ -76,7 +99,9 @@ export function AiChatWidget({ context, label = "AI Assistant" }: Props) {
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-ds-surface-container-low">
             {messages.length === 0 && (
               <div className="text-center py-6">
-                <span className="material-symbols-outlined text-ds-outline text-4xl block mb-2" style={{ fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+                <div className="w-14 h-14 rounded-full overflow-hidden mx-auto mb-2 bg-[#0d1340] flex items-center justify-center">
+                  <BotAvatar size={56} />
+                </div>
                 <p className="type-body-sm text-ds-on-surface-variant">Hi! I&apos;m Erli, your AI assistant.</p>
                 <p className="type-body-sm text-ds-on-surface-variant mt-1">How can I help you today?</p>
               </div>
@@ -84,7 +109,9 @@ export function AiChatWidget({ context, label = "AI Assistant" }: Props) {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "model" && (
-                  <span className="material-symbols-outlined text-ds-primary mr-2 mt-0.5 shrink-0" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+                  <div className="w-5 h-5 rounded-full overflow-hidden mr-2 mt-0.5 shrink-0 bg-[#0d1340] flex items-center justify-center">
+                    <BotAvatar size={20} />
+                  </div>
                 )}
                 <div
                   className={`max-w-[82%] px-3 py-2 rounded-ds text-[13px] leading-relaxed ${
@@ -99,7 +126,9 @@ export function AiChatWidget({ context, label = "AI Assistant" }: Props) {
             ))}
             {isPending && (
               <div className="flex justify-start">
-                <span className="material-symbols-outlined text-ds-primary mr-2 mt-0.5 shrink-0" style={{ fontSize: 16, fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+                <div className="w-5 h-5 rounded-full overflow-hidden mr-2 mt-0.5 shrink-0 bg-[#0d1340] flex items-center justify-center">
+                  <BotAvatar size={20} />
+                </div>
                 <div className="bg-white border border-ds-outline-variant px-3 py-2 rounded-ds rounded-bl-none flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-ds-outline animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="w-1.5 h-1.5 rounded-full bg-ds-outline animate-bounce" style={{ animationDelay: "150ms" }} />

@@ -9,6 +9,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
+  // DB check — JWT role is stale right after onboarding (token not yet refreshed)
+  // and would loop user back to /onboarding on every dashboard load.
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
     select: { role: true },

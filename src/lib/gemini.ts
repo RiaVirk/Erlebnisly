@@ -11,7 +11,13 @@ export function getGeminiClient(): GoogleGenAI {
   return _client;
 }
 
-export const GEMINI_MODEL = "gemini-2.5-flash";
+// Fallback chain: primary → lite (both stable, verified against Model_2 type in SDK)
+// Preview models (gemini-3-flash-preview, gemini-3.1-flash-lite-preview) are excluded
+// because preview instability would defeat the purpose of a reliability fallback.
+export const GEMINI_MODEL_CHAIN = [
+  "gemini-2.5-flash",       // primary: full quality
+  "gemini-2.5-flash-lite",  // fallback: higher throughput, lower latency
+] as const;
 
 export const SYSTEM_PROMPT = `You are Erli, a friendly and knowledgeable AI assistant for Erlebnisly — a premium B2B activity booking platform based in Berlin.
 

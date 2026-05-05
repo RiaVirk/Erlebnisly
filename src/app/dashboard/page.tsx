@@ -17,7 +17,7 @@ export default async function DashboardPage() {
 
   const now = new Date();
 
-  const [upcomingBookings, recentBookings, completedCount, totalSpentResult, wishlistItems, recommendations] =
+  const [upcomingBookings, recentBookings, completedCount, totalSpentResult, wishlistItems, recommendations, ratingsData] =
     await Promise.all([
       prisma.booking.findMany({
         where: { userId: user.id, status: "CONFIRMED", deletedAt: null, timeSlot: { startTime: { gte: now } } },
@@ -63,11 +63,15 @@ export default async function DashboardPage() {
         where: { isPublished: true, isActive: true, deletedAt: null },
         include: {
           category: true,
-          reviews: { select: { rating: true } },
           _count: { select: { reviews: true } },
         },
         orderBy: { createdAt: "desc" },
         take: 4,
+      }),
+      // Aggregate ratings in one query instead of loading all review rows
+      prisma.review.groupBy({
+        by: ["experienceId"],
+        _avg: { rating: true },
       }),
     ]);
 
@@ -130,22 +134,18 @@ export default async function DashboardPage() {
     priceCents: w.experience.basePriceCents,
   }));
 
-  const serializedRecs = recommendations.map((r) => {
-    const avgRating =
-      r._count.reviews > 0
-        ? (r.reviews.reduce((s, v) => s + v.rating, 0) / r._count.reviews).toFixed(1)
-        : null;
-    return {
-      id: r.id,
-      title: r.title,
-      category: r.category.name,
-      priceCents: r.basePriceCents,
-      durationMinutes: r.durationMinutes,
-      image: r.images[0] ?? null,
-      difficulty: r.difficulty as string,
-      rating: avgRating,
-    };
-  });
+  const ratingsMap = new Map(ratingsData.map((r) => [r.experienceId, r._avg.rating]));
+
+  const serializedRecs = recommendations.map((r) => ({
+    id: r.id,
+    title: r.title,
+    category: r.category.name,
+    priceCents: r.basePriceCents,
+    durationMinutes: r.durationMinutes,
+    image: r.images[0] ?? null,
+    difficulty: r.difficulty as string,
+    rating: ratingsMap.get(r.id) != null ? ratingsMap.get(r.id)!.toFixed(1) : null,
+  }));
 
   return (
     <DashboardClient

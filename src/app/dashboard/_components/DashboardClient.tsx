@@ -154,23 +154,32 @@ export default function DashboardClient({
     <div className="flex flex-col min-h-screen">
 
       {/* ── Topbar ─────────────────────────────────────────────── */}
-      <header className="dash-topbar sticky top-0 z-40 h-[60px] bg-white/90 backdrop-blur-[12px] border-b border-ds-outline-variant flex items-center justify-between px-4 lg:px-8 flex-shrink-0 gap-3">
+      <header
+        className="dash-topbar sticky top-0 z-40 h-[60px] bg-white/95 backdrop-blur-[16px] flex items-center justify-between px-4 lg:px-8 flex-shrink-0 gap-3"
+        style={{ boxShadow: "0 4px 32px rgba(255,77,0,0.06), 0 1px 16px rgba(0,0,0,0.05)" }}
+      >
+        {/* Ambient bottom glow — mirrors sidebar top glow */}
+        <div className="absolute inset-x-0 bottom-0 h-px pointer-events-none"
+          style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,77,0,0.15) 30%, rgba(255,77,0,0.15) 70%, transparent 100%)" }}
+        />
+
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Hamburger — mobile only */}
           <button
-            className="lg:hidden flex-shrink-0 p-1.5 rounded-ds text-ds-on-surface-variant hover:bg-ds-surface-container-low"
+            className="lg:hidden flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-ds-on-surface-variant hover:bg-ds-surface-container-low transition-colors"
             onClick={() => window.dispatchEvent(new CustomEvent("sidebar:open"))}
           >
             <span className="material-symbols-outlined" style={{fontSize:22}}>menu</span>
           </button>
 
           <div className="flex-shrink-0 hidden sm:block">
-            <p className="text-[12px] text-ds-on-surface-variant" suppressHydrationWarning>
+            <p className="text-[11px] text-ds-on-surface-variant font-medium" suppressHydrationWarning>
               {(() => { const h = new Date().getHours(); return h < 12 ? "Good morning," : h < 17 ? "Good afternoon," : "Good evening,"; })()}
             </p>
-            <p className="text-[15px] font-bold text-ds-on-surface leading-tight">{userName}</p>
+            <p className="text-[15px] font-bold text-ds-on-surface leading-tight tracking-tight">{userName}</p>
           </div>
-          {/* Search bar — hidden on small mobile */}
+
+          {/* Search bar */}
           <div className="dash-search relative flex-1 max-w-[340px] hidden sm:block">
             <span className="material-symbols-outlined absolute left-[11px] top-1/2 -translate-y-1/2 text-ds-outline pointer-events-none" style={{fontSize:16}}>search</span>
             <input
@@ -183,14 +192,14 @@ export default function DashboardClient({
                 }
               }}
               placeholder="Search activities..."
-              className="w-full bg-ds-surface-container-low border border-ds-outline-variant rounded-full py-[7px] pl-[36px] pr-[14px] text-[13px] text-ds-on-surface placeholder:text-ds-outline outline-none focus:border-ds-primary focus:shadow-[0_0_0_3px_rgba(255,77,0,0.12)] focus:bg-white transition-all font-[inherit]"
+              className="w-full bg-ds-surface-container-low rounded-full py-[7px] pl-[36px] pr-[14px] text-[13px] text-ds-on-surface placeholder:text-ds-outline outline-none focus:shadow-[0_0_0_2px_rgba(255,77,0,0.25),0_0_0_4px_rgba(255,77,0,0.08)] focus:bg-white transition-all font-[inherit]"
+              style={{ border: "1.5px solid transparent", backgroundClip: "padding-box" }}
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-[8px] flex-shrink-0">
-          {/* Dark mode toggle — suppressHydrationWarning because localStorage state
-              intentionally differs between server (always false) and client. */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Dark mode toggle */}
           <div
             className="dash-theme-toggle hidden sm:block"
             onClick={() => setDark((d) => !d)}
@@ -212,20 +221,25 @@ export default function DashboardClient({
           </div>
 
           {/* Bell */}
-          <div
-            className="dash-icon-btn w-9 h-9 rounded-ds-lg border border-ds-outline-variant bg-white flex items-center justify-center cursor-pointer text-ds-on-surface-variant relative hover:bg-ds-surface-container-low hover:border-ds-outline transition-colors"
+          <button
+            className="relative w-9 h-9 rounded-xl flex items-center justify-center text-ds-on-surface-variant hover:bg-ds-surface-container-low transition-all duration-200 cursor-pointer"
             onClick={() => setNotifOpen((o) => !o)}
           >
-            <span className="material-symbols-outlined" style={{fontSize:20}}>notifications</span>
-            {unread > 0 && <span className="absolute top-[6px] right-[6px] w-[7px] h-[7px] rounded-full bg-ds-secondary border-[1.5px] border-white" />}
-          </div>
+            <span className="material-symbols-outlined" style={{fontSize:20, fontVariationSettings: unread > 0 ? "'FILL' 1" : "'FILL' 0"}}>notifications</span>
+            {unread > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full bg-ds-primary"
+                style={{ boxShadow: "0 0 6px 2px rgba(255,77,0,0.5)" }}
+              />
+            )}
+          </button>
 
           {/* Book CTA */}
           <Link
             href="/experiences"
-            className="flex items-center gap-1.5 bg-ds-primary text-ds-on-primary text-[13px] font-semibold px-3 lg:px-4 py-2 rounded-ds-md border-none cursor-pointer hover:opacity-90 transition-opacity"
+            className="flex items-center gap-1.5 bg-ds-primary text-white text-[13px] font-semibold px-3 lg:px-4 py-2 rounded-xl hover:-translate-y-0.5 hover:brightness-105 transition-all duration-200"
+            style={{ boxShadow: "0 4px 16px rgba(255,77,0,0.35)" }}
           >
-            <span className="material-symbols-outlined" style={{fontSize:16}}>add_circle</span>
+            <span className="material-symbols-outlined" style={{fontSize:16, fontVariationSettings:"'FILL' 1"}}>add_circle</span>
             <span className="hidden sm:inline">Book Experience</span>
           </Link>
         </div>
@@ -233,24 +247,50 @@ export default function DashboardClient({
 
       {/* ── Notification panel ──────────────────────────────────── */}
       {notifOpen && (
-        <div ref={notifRef} className="dash-notif-panel fixed right-6 top-[68px] w-[320px] bg-white rounded-ds-xl border border-ds-outline-variant shadow-[0_8px_32px_rgba(15,23,42,0.14)] z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 pt-[14px] pb-[10px] border-b border-ds-outline-variant">
-            <span className="text-[14px] font-bold text-ds-on-surface">Notifications</span>
-            <span className="text-[12px] font-semibold text-ds-secondary cursor-pointer" onClick={() => setNotifs((n) => n.map((x) => ({ ...x, read: true })))}>Mark all read</span>
+        <div
+          ref={notifRef}
+          className="fixed right-4 lg:right-6 top-[68px] w-[300px] lg:w-[320px] bg-white/95 backdrop-blur-[16px] rounded-2xl z-50 overflow-hidden"
+          style={{ boxShadow: "0 8px 48px rgba(255,77,0,0.1), 0 4px 24px rgba(0,0,0,0.1)" }}
+        >
+          <div className="flex items-center justify-between px-4 pt-4 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[14px] font-bold text-ds-on-surface">Notifications</span>
+              {unread > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-ds-primary text-white"
+                  style={{ boxShadow: "0 0 8px rgba(255,77,0,0.4)" }}>
+                  {unread}
+                </span>
+              )}
+            </div>
+            <button
+              className="text-[12px] font-semibold text-ds-primary cursor-pointer hover:opacity-70 transition-opacity"
+              onClick={() => setNotifs((n) => n.map((x) => ({ ...x, read: true })))}
+            >
+              Mark all read
+            </button>
           </div>
+          <div className="mx-3 h-px bg-gradient-to-r from-transparent via-[rgba(255,77,0,0.15)] to-transparent mb-1" />
           {notifs.map((n) => (
             <div
               key={n.id}
-              className={`dash-notif-item flex items-start gap-[10px] px-4 py-3 border-b border-ds-outline-variant last:border-b-0 cursor-pointer hover:bg-ds-surface-container-low transition-colors ${!n.read ? "dash-notif-unread bg-[#fff4f0]" : ""}`}
+              className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors rounded-xl mx-1 mb-0.5 ${!n.read ? "bg-[rgba(255,77,0,0.05)]" : "hover:bg-ds-surface-container-low"}`}
               onClick={() => setNotifs((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)))}
             >
-              <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[5px] ${n.read ? "opacity-0" : "bg-ds-secondary"}`} />
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5 transition-opacity"
+                style={{
+                  background: n.read ? "transparent" : "#FF4D00",
+                  boxShadow: n.read ? "none" : "0 0 6px rgba(255,77,0,0.6)",
+                  opacity: n.read ? 0 : 1,
+                }}
+              />
               <div>
                 <p className="text-[13px] text-ds-on-surface leading-snug">{n.text}</p>
-                <p className="text-[11px] text-ds-on-surface-variant mt-[2px]">{n.time}</p>
+                <p className="text-[11px] text-ds-on-surface-variant mt-0.5">{n.time}</p>
               </div>
             </div>
           ))}
+          <div className="h-2" />
         </div>
       )}
 
