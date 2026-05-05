@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AiChatWidget } from "@/components/shared/AiChatWidget";
 
 /* ── Types ──────────────────────────────────────────────────────── */
 interface NextBooking {
@@ -594,15 +595,8 @@ export default function DashboardClient({
         </div>
       </div>
 
-      {/* ── Floating support button ───────────────────────────── */}
-      <button
-        className="fixed right-7 bottom-7 z-[200] w-[50px] h-[50px] rounded-full border-none cursor-pointer flex items-center justify-center text-white shadow-[0_4px_20px_rgba(15,23,42,0.25)] hover:scale-110 hover:shadow-[0_8px_32px_rgba(15,23,42,0.3)] transition-all"
-        style={{background:"var(--color-ds-primary-container)"}}
-        title="Support"
-        onClick={() => alert("Support coming soon!")}
-      >
-        <span className="material-symbols-outlined" style={{fontSize:22}}>support_agent</span>
-      </button>
+      {/* ── AI Assistant (Gemini-powered) ─────────────────────── */}
+      <AiChatWidget label="AI Assistant — Erli" />
     </div>
   );
 }

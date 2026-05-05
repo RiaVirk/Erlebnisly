@@ -5,6 +5,7 @@ import { formatCentsEUR } from "@/lib/pricing/utils";
 import { toZonedTime, format as formatTz } from "date-fns-tz";
 import { env } from "@/lib/env";
 import BookingStatusPoller from "./_components/BookingStatusPoller";
+import { BookingAiChat } from "./_components/BookingAiChat";
 import Link from "next/link";
 
 const STATUS_INFO: Record<string, { label: string; bg: string; text: string; icon: string }> = {
@@ -62,8 +63,20 @@ export default async function ThankYouPage({
     ? `https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${exp.latitude},${exp.longitude}&zoom=15`
     : `https://www.google.com/maps/embed/v1/search?key=${mapsKey}&q=${encodeURIComponent(exp.location + ", Germany")}`;
   const heroImg    = exp.images?.[0] ?? null;
-
   const perPerson  = Math.round(booking.totalPriceCents / booking.participantCount);
+
+  // Context string passed to Gemini so it can answer booking-specific questions
+  const aiContext = [
+    `Booking reference: #${ref}`,
+    `Experience: ${exp.title}`,
+    `Category: ${exp.category.name}`,
+    `Location: ${exp.location}`,
+    `Date: ${dateLabel} at ${timeLabel}–${timeEnd}`,
+    `Duration: ${exp.durationMinutes} minutes`,
+    `Participants: ${booking.participantCount}`,
+    `Total paid: €${(booking.totalPriceCents / 100).toFixed(2)}`,
+    `Status: ${booking.status}`,
+  ].join("\n");
 
   return (
     <div className="min-h-screen bg-ds-background">
@@ -268,16 +281,8 @@ export default async function ThankYouPage({
               </div>
             )}
 
-            {/* Need help */}
-            <div className="bg-white rounded-ds-xl border border-ds-outline-variant p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-ds-md bg-ds-surface-container-low flex items-center justify-center shrink-0 text-ds-primary">
-                <span className="material-symbols-outlined" style={{ fontSize: 26, fontVariationSettings: "'FILL' 1" }}>support_agent</span>
-              </div>
-              <div>
-                <p className="type-body-sm font-semibold text-ds-on-surface">Need assistance?</p>
-                <p className="type-body-sm text-ds-on-surface-variant">Our support team is here to help you.</p>
-              </div>
-            </div>
+            {/* AI Assistance — Gemini-powered, booking-context-aware */}
+            <BookingAiChat context={aiContext} />
 
             {/* CTAs */}
             <div className="flex flex-col gap-3">
