@@ -2,11 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
 import { setUserRole } from "@/lib/actions/user";
 import { toast } from "sonner";
 
 export default function OnboardingClient() {
   const router = useRouter();
+  const { session } = useClerk();
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<"CUSTOMER" | "HOST" | null>(null);
 
@@ -18,6 +20,9 @@ export default function OnboardingClient() {
         toast.error(result.error);
         return;
       }
+      // Reload the Clerk session so the JWT picks up the new publicMetadata.role.
+      // Without this, middleware still sees role=null and redirects back to onboarding.
+      await session?.reload();
       router.push(selected === "HOST" ? "/host/dashboard" : "/dashboard");
     });
   }

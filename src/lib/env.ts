@@ -20,6 +20,8 @@ const schema = z.object({
   SENTRY_AUTH_TOKEN: z.string().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
   DEMO_MODE: z.enum(["true", "false"]).default("false").transform((v) => v === "true"),
+  GOOGLE_MAPS_API_KEY: z.string().min(1),
+  GEMINI_API_KEY: z.string().min(1).optional(),
 });
 
 export const env = schema.parse(process.env);

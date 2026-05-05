@@ -5,13 +5,9 @@ import Link from "next/link";
 export default async function HomePage() {
   const { userId } = await auth();
 
-  if (userId) {
-    const { sessionClaims } = await auth();
-    const role = (sessionClaims?.publicMetadata as { role?: string } | undefined)?.role;
-    if (role === "HOST") redirect("/host/dashboard");
-    if (role === "CUSTOMER") redirect("/dashboard");
-    redirect("/onboarding");
-  }
+  // Any logged-in user visiting the homepage goes to onboarding
+  // (which routes them to the right dashboard after they choose their role)
+  if (userId) redirect("/onboarding");
 
   return (
     <main className="min-h-screen bg-ds-background flex flex-col">

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatInTimeZone } from "date-fns-tz";
+import { env } from "@/lib/env";
 import DashboardClient from "./_components/DashboardClient";
 
 export default async function DashboardPage() {
@@ -159,6 +160,7 @@ export default async function DashboardPage() {
       recentBookings={serializedRecent}
       wishlist={serializedWishlist}
       recommendations={serializedRecs}
+      mapsApiKey={env.GOOGLE_MAPS_API_KEY}
     />
   );
 }

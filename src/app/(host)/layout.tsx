@@ -1,15 +1,22 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import HostSidebar from "./_components/HostSidebar";
 import { ProvidersTanstack } from "@/components/shared/ProvidersTanstack";
 
 export default async function HostLayout({ children }: { children: React.ReactNode }) {
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
-  if (role !== "HOST" && role !== "ADMIN") redirect("/dashboard");
+  // Check DB directly — never rely on a potentially stale JWT for role gating
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { role: true },
+  });
+
+  if (!user || !user.role) redirect("/onboarding");
+  if (user.role !== "HOST" && user.role !== "ADMIN") redirect("/dashboard");
 
   return (
     <ClerkProvider afterSignOutUrl="/">

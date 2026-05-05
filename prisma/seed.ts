@@ -14,6 +14,64 @@ const CATS = [
   { slug: "professional", name: "Professional" },
 ];
 
+// Precise coordinates for each experience location
+const COORDS: Record<string, { lat: number; lon: number }> = {
+  "exp-adventure-sunrise-hike":   { lat: 50.9152, lon: 14.0739 }, // Bastei, Saxon Switzerland
+  "exp-adventure-cycling-tour":   { lat: 52.4733, lon: 13.4008 }, // Tempelhofer Feld
+  "exp-adventure-bouldering":     { lat: 52.5163, lon: 13.4548 }, // Friedrichshain
+  "exp-adventure-kayaking":       { lat: 52.4399, lon: 13.6125 }, // Müggelsee
+  "exp-adventure-rock-climbing":  { lat: 50.9128, lon: 14.0698 }, // Elbsandstein
+  "exp-adventure-paragliding":    { lat: 52.4009, lon: 13.0596 }, // Potsdam Havel
+  "exp-adventure-sailing":        { lat: 52.4209, lon: 13.1788 }, // Wannsee
+  "exp-adventure-sup":            { lat: 52.5200, lon: 13.3766 }, // Spree, Berlin Mitte
+  "exp-adventure-parkour":        { lat: 52.5380, lon: 13.4221 }, // Prenzlauer Berg
+  "exp-adventure-urban-exploration": { lat: 52.5167, lon: 13.3833 }, // Berlin Mitte
+
+  "exp-food-street-food-tour":    { lat: 52.4978, lon: 13.4071 }, // Kreuzberg
+  "exp-food-sourdough":           { lat: 52.3906, lon: 13.0645 }, // Potsdam
+  "exp-food-wine-tasting":        { lat: 52.5380, lon: 13.4221 }, // Prenzlauer Berg
+  "exp-food-sushi":               { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-food-vegan-cooking":       { lat: 52.4811, lon: 13.4380 }, // Neukölln
+  "exp-food-craft-beer":          { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-food-chocolate":           { lat: 52.5163, lon: 13.3030 }, // Charlottenburg
+  "exp-food-ramen":               { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-food-cheese-making":       { lat: 52.3906, lon: 13.0645 }, // Potsdam
+  "exp-food-market-cooking":      { lat: 52.4978, lon: 13.4071 }, // Kreuzberg
+
+  "exp-arts-pottery":             { lat: 52.5512, lon: 13.3553 }, // Wedding
+  "exp-arts-photography":         { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-arts-street-art":          { lat: 52.4978, lon: 13.4071 }, // Kreuzberg
+  "exp-arts-watercolour":         { lat: 52.4836, lon: 13.3531 }, // Schöneberg
+  "exp-arts-calligraphy":         { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-arts-darkroom":            { lat: 52.4811, lon: 13.4380 }, // Neukölln
+  "exp-arts-improv":              { lat: 52.5380, lon: 13.4221 }, // Prenzlauer Berg
+  "exp-arts-mosaic":              { lat: 52.5512, lon: 13.3553 }, // Wedding
+  "exp-arts-berlin-wall":         { lat: 52.5351, lon: 13.3901 }, // East Side Gallery
+  "exp-arts-jazz-evening":        { lat: 52.4811, lon: 13.4380 }, // Neukölln
+
+  "exp-wellness-forest-bathing":  { lat: 52.4880, lon: 13.2364 }, // Grunewald
+  "exp-wellness-sunset-yoga":     { lat: 52.4797, lon: 13.4709 }, // Treptower Park
+  "exp-wellness-sound-healing":   { lat: 52.4811, lon: 13.4380 }, // Neukölln
+  "exp-wellness-cold-plunge":     { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-wellness-morning-yoga":    { lat: 52.5145, lon: 13.3501 }, // Tiergarten
+  "exp-wellness-aerial-yoga":     { lat: 52.5380, lon: 13.4221 }, // Prenzlauer Berg
+  "exp-wellness-hot-yoga":        { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-wellness-meditation":      { lat: 52.5163, lon: 13.3030 }, // Charlottenburg
+  "exp-wellness-pilates":         { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-wellness-rooftop-yoga":    { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+
+  "exp-pro-resume-workshop":      { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-pro-public-speaking":      { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-pro-linkedin":             { lat: 52.5163, lon: 13.3030 }, // Charlottenburg
+  "exp-pro-negotiation":          { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-pro-python":               { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-pro-ux-design":            { lat: 52.4978, lon: 13.4071 }, // Kreuzberg
+  "exp-pro-financial-planning":   { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-pro-ai-productivity":      { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+  "exp-pro-freelancing":          { lat: 52.4978, lon: 13.4071 }, // Kreuzberg
+  "exp-pro-sales-psychology":     { lat: 52.5200, lon: 13.4050 }, // Berlin Mitte
+};
+
 const SAMPLE_EXPERIENCES = [
 
   // ════════════════════════════════════════════════════════════════════
@@ -638,9 +696,13 @@ async function main() {
   for (const x of SAMPLE_EXPERIENCES) {
     const cat = await prisma.category.findUnique({ where: { slug: x.cat } });
     if (!cat) continue;
+    const coords = COORDS[x.id];
     const exp = await prisma.experience.upsert({
       where: { id: x.id },
-      update: { images: [...x.images], title: x.title, shortDescription: x.short },
+      update: {
+        images: [...x.images], title: x.title, shortDescription: x.short,
+        ...(coords && { latitude: coords.lat, longitude: coords.lon }),
+      },
       create: {
         id: x.id, hostId: host.id, categoryId: cat.id,
         title: x.title, shortDescription: x.short,
@@ -651,6 +713,8 @@ async function main() {
         minPriceCents: x.price, maxPriceCents: x.price,
         timezone: "Europe/Berlin", isPublished: true,
         images: [...x.images],
+        latitude: coords?.lat,
+        longitude: coords?.lon,
       },
     });
     for (const offsetDays of [3, 7, 14]) {

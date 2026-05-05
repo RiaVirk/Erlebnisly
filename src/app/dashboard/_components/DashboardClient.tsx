@@ -30,6 +30,7 @@ interface Props {
   recentBookings: RecentBooking[];
   wishlist: WishlistItem[];
   recommendations: Recommendation[];
+  mapsApiKey: string;
 }
 
 /* ── Helpers ────────────────────────────────────────────────────── */
@@ -105,7 +106,7 @@ const MOCK_NOTIFS = [
 export default function DashboardClient({
   userName, completedCount, upcomingCount, totalSpentCents,
   favouriteCategory, favouriteCategoryCount, loyaltyPoints,
-  nextBooking, recentBookings, wishlist, recommendations,
+  nextBooking, recentBookings, wishlist, recommendations, mapsApiKey,
 }: Props) {
   const router = useRouter();
   const [dark, setDark]             = useState(false);
@@ -163,8 +164,10 @@ export default function DashboardClient({
           </button>
 
           <div className="flex-shrink-0 hidden sm:block">
-            <p className="text-[12px] text-ds-on-surface-variant">Good morning,</p>
-            <p className="text-[15px] font-bold text-ds-on-surface leading-tight">{userName} 👋</p>
+            <p className="text-[12px] text-ds-on-surface-variant" suppressHydrationWarning>
+              {(() => { const h = new Date().getHours(); return h < 12 ? "Good morning," : h < 17 ? "Good afternoon," : "Good evening,"; })()}
+            </p>
+            <p className="text-[15px] font-bold text-ds-on-surface leading-tight">{userName}</p>
           </div>
           {/* Search bar — hidden on small mobile */}
           <div className="dash-search relative flex-1 max-w-[340px] hidden sm:block">
@@ -359,10 +362,19 @@ export default function DashboardClient({
 
               {/* Map + info */}
               <div className="flex-1 relative overflow-hidden min-h-[180px]">
-                <iframe title="Activity location" width="100%" height="100%" className="absolute inset-0 border-0 block pointer-events-none" style={{filter:"saturate(0.7) brightness(0.85)",minHeight:180}} loading="lazy"
-                  src={nextBooking.lat && nextBooking.lon
-                    ? `https://www.openstreetmap.org/export/embed.html?bbox=${nextBooking.lon-0.02},${nextBooking.lat-0.015},${nextBooking.lon+0.02},${nextBooking.lat+0.015}&layer=mapnik&marker=${nextBooking.lat},${nextBooking.lon}`
-                    : `https://www.openstreetmap.org/export/embed.html?bbox=9.8,53.45,10.2,53.65&layer=mapnik`} />
+                <iframe
+                  title="Activity location"
+                  width="100%" height="100%"
+                  className="absolute inset-0 border-0 block pointer-events-none"
+                  style={{filter:"saturate(0.7) brightness(0.85)", minHeight:180}}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={
+                    nextBooking.lat && nextBooking.lon
+                      ? `https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${nextBooking.lat},${nextBooking.lon}&zoom=15`
+                      : `https://www.google.com/maps/embed/v1/search?key=${mapsApiKey}&q=${encodeURIComponent(nextBooking.location + ", Germany")}`
+                  }
+                />
                 <div className="absolute inset-0 pointer-events-none" style={{background:"linear-gradient(135deg,rgba(15,23,42,0.72) 0%,rgba(15,23,42,0.55) 100%)"}} />
                 <div className="relative z-10 h-full flex flex-col justify-between p-5">
                   <div>
