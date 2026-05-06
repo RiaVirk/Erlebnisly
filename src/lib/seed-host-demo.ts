@@ -180,11 +180,12 @@ async function _createDemoBookings(
   const N = reviewers.length; // 6
   const reviewedByIndex = new Set<number>();
 
-  // 12 past months — reviewer cycles [0,1,2,3,4,5,0,1,2,3,4,5]
-  // Consecutive months always get a different person ✓
-  // Each person appears exactly twice → max 2 per person ✓
+  // 12 past months — reviewer = (month + expIndex) % 6
+  // Offset by expIndex ensures different experiences start on different people,
+  // so the most recent bookings across all 5 experiences show different names ✓
+  // Each person still appears max twice per experience ✓
   for (let m = 0; m < 12; m++) {
-    const reviewerIdx = m % N;
+    const reviewerIdx = (m + expIndex) % N;
     const reviewer = reviewers[reviewerIdx];
     const pastStart = setHours(subMonths(now, m + 1), 10);
     const pastEnd = new Date(pastStart.getTime() + durationMinutes * 60_000);
