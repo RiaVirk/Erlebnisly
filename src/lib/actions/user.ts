@@ -2,6 +2,7 @@
 
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { seedHostDemoData } from "@/lib/seed-host-demo";
 import type { Role } from "@prisma/client";
 
 export async function setUserRole(
@@ -24,7 +25,9 @@ export async function setUserRole(
       data: { role: role as Role },
     });
 
-    // 3. If HOST, create HostProfile
+    // 3. If HOST — create HostProfile and seed demo data so the dashboard
+    //    is populated with fictitious experiences, bookings, and earnings
+    //    immediately on first login. Idempotent: skips if data already exists.
     if (role === "HOST") {
       const dbUser = await prisma.user.findUnique({ where: { clerkId: userId } });
       if (!dbUser) return { error: "User not found in database" };
@@ -34,6 +37,11 @@ export async function setUserRole(
         update: {},
         create: { userId: dbUser.id },
       });
+
+      // Fire-and-forget: don't block the redirect on seeding
+      seedHostDemoData(dbUser.id).catch((err) =>
+        console.error("[setUserRole] seedHostDemoData failed:", err)
+      );
     }
 
     return {};
